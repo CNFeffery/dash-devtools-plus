@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./README-zh_CN.md">简体中文</a>
+  English | <a href="./README-zh_CN.md">简体中文</a>
 </p>
 
 Dash Devtools Plus extends Dash's native Dev Tools with a focused drawer for callback relationships, component inspection, state snapshots, direct imports, server resources, and toolbar appearance. It is available only in an explicitly debug-enabled Dash session, so development metadata stays out of ordinary production use.
