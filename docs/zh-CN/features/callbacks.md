@@ -2,7 +2,7 @@
 
 顺着每一条回调边路由排查，不再丢失上下文：这里会把 Dash 已注册回调转化为可搜索的开发视图 ✨。
 
-![回调关系](../../../imgs/docs/callbacks-zh-CN.png)
+![回调关系](../../../imgs/docs/callbacks-zh-CN.webp)
 
 ## 🔎 浏览与筛选
 

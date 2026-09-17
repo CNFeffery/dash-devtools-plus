@@ -11,7 +11,7 @@ Dash Devtools Plus is a Dash application development and debugging enhancement p
 ## 📦 Install
 
 ```bash
-pip install dash-devtools-plus
+pip install dash-devtools-plus -U
 ```
 
 The package exposes a `dash_hooks` entry point. Dash discovers it when the package is installed, so importing the package is enough to register the integration.

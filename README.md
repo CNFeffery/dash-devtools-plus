@@ -18,12 +18,12 @@
 
 Start a Dash application in debug mode, then select **Devtools Plus** from the native toolbar in the lower-right corner. The drawer opens over the application, ready for a closer look.
 
-![Dash Devtools Plus main panel in English](./imgs/docs/main-panel-en.png)
+![Dash Devtools Plus main panel in English](./imgs/docs/main-panel-en.webp)
 
 ## ⚡ Quick start
 
 ```bash
-pip install dash-devtools-plus
+pip install dash-devtools-plus -U
 ```
 
 ```python

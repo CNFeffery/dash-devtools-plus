@@ -4,7 +4,7 @@
 
 The component inspector maps a rendered page element back to the closest owning Dash component.
 
-![Component inspector resolved a DataTable](../../../imgs/docs/component-inspector.png)
+![Component inspector resolved a DataTable](../../../imgs/docs/component-inspector.webp)
 
 ## 🧭 Workflow
 

@@ -12,4 +12,4 @@ All three use port `8050` by default. Run one application at a time, then open <
 
 The comprehensive example deliberately contains native error-test controls, background and WebSocket registration shapes, and 100+ callbacks. Use it for acceptance checks; do not copy its intentionally broad topology wholesale into a production app.
 
-![The comprehensive callback laboratory](../../imgs/docs/comprehensive-example.png)
+![The comprehensive callback laboratory](../../imgs/docs/comprehensive-example.webp)

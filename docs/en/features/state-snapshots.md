@@ -4,7 +4,7 @@
 
 State snapshots capture selected component props and restore them later in the same browser tab.
 
-![Create a state snapshot](../../../imgs/docs/state-snapshot-capture.png)
+![Create a state snapshot](../../../imgs/docs/state-snapshot-capture.webp)
 
 ## ✨ Create a snapshot
 

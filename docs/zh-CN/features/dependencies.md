@@ -4,7 +4,7 @@
 
 依赖库工作区汇总项目源码树中**直接导入**的库，而不是把 Python 环境中安装的每一个包都列出来。
 
-![已导入依赖库](../../../imgs/docs/dependencies-zh-CN.png)
+![已导入依赖库](../../../imgs/docs/dependencies-zh-CN.webp)
 
 ## 🗂️ 分类
 

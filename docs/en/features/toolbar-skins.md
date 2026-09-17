@@ -4,7 +4,7 @@
 
 This workspace changes the appearance of Dash's native Dev Tools toolbar and error display while retaining the native workflow.
 
-![Toolbar skin choices](../../../imgs/docs/toolbar-skins.png)
+![Toolbar skin choices](../../../imgs/docs/toolbar-skins.webp)
 
 ## 🌈 Available themes
 

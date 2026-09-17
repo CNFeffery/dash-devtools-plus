@@ -2,7 +2,7 @@
 
 Follow every callback edge without losing the thread: this workspace turns Dash's registered callback list into a searchable development view. ✨
 
-![Callback relationships](../../../imgs/docs/callbacks.png)
+![Callback relationships](../../../imgs/docs/callbacks.webp)
 
 ## 🔎 Browse and filter
 

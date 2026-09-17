@@ -4,7 +4,7 @@
 
 状态快照可保存选中组件的 Props，并在同一个浏览器标签页中稍后还原。
 
-![创建状态快照](../../../imgs/docs/state-snapshot-capture-zh-CN.png)
+![创建状态快照](../../../imgs/docs/state-snapshot-capture-zh-CN.webp)
 
 ## ✨ 创建快照
 

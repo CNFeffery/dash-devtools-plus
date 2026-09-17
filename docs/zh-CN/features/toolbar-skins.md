@@ -4,7 +4,7 @@
 
 该工作区只改变 Dash 原生 Dev Tools 工具栏及错误展示的外观，不改变原生工作流。
 
-![工具条主题选择](../../../imgs/docs/toolbar-skins-zh-CN.png)
+![工具条主题选择](../../../imgs/docs/toolbar-skins-zh-CN.webp)
 
 ## 🌈 可用主题
 

@@ -18,12 +18,12 @@
 
 以调试模式启动 Dash 应用后，在原生右下角工具栏中点击 **Devtools Plus**。抽屉会覆盖在应用上方，随时可以开始深入查看。
 
-![Dash Devtools Plus 中文主面板](./imgs/docs/main-panel-zh-CN.png)
+![Dash Devtools Plus 中文主面板](./imgs/docs/main-panel-zh-CN.webp)
 
 ## ⚡ 快速开始
 
 ```bash
-pip install dash-devtools-plus
+pip install dash-devtools-plus -U
 ```
 
 ```python

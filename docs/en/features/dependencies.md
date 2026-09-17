@@ -4,7 +4,7 @@
 
 The dependency workspace summarizes libraries directly imported by the project source tree, rather than every package installed in the Python environment.
 
-![Imported dependencies](../../../imgs/docs/dependencies.png)
+![Imported dependencies](../../../imgs/docs/dependencies.webp)
 
 ## 🗂️ Categories
 

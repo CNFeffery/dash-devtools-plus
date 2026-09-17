@@ -4,7 +4,7 @@
 
 The server workspace gives a compact, live view of the process host while you develop a Dash application.
 
-![Server resource monitor](../../../imgs/docs/server-metrics.png)
+![Server resource monitor](../../../imgs/docs/server-metrics.webp)
 
 ## 👀 What it shows
 

@@ -12,4 +12,4 @@
 
 完整示例有意包含原生报错测试控件、后台与 WebSocket 注册形态，以及 100 多条回调。它适合验收与压力检查，不建议将其刻意扩张的回调拓扑直接照搬到生产应用。
 
-![完整回调实验室](../../imgs/docs/comprehensive-example.png)
+![完整回调实验室](../../imgs/docs/comprehensive-example.webp)

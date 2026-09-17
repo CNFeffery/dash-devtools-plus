@@ -4,7 +4,7 @@
 
 服务器资源工作区在开发 Dash 应用时提供宿主环境的紧凑实时视图。
 
-![服务器资源监控](../../../imgs/docs/server-metrics-zh-CN.png)
+![服务器资源监控](../../../imgs/docs/server-metrics-zh-CN.webp)
 
 ## 👀 展示内容
 

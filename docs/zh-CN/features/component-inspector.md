@@ -4,7 +4,7 @@
 
 组件探查会把已渲染的页面元素定位回最近的所属 Dash 组件。
 
-![组件探查定位到 DataTable](../../../imgs/docs/component-inspector-zh-CN.png)
+![组件探查定位到 DataTable](../../../imgs/docs/component-inspector-zh-CN.webp)
 
 ## 🧭 操作流程
 

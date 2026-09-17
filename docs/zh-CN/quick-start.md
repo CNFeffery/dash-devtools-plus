@@ -11,7 +11,7 @@ Dash Devtools Plus 是基于 Dash 中 Hooks 机制的 Dash 应用开发调试额
 ## 📦 安装
 
 ```bash
-pip install dash-devtools-plus
+pip install dash-devtools-plus -U
 ```
 
 本包提供 `dash_hooks` 入口点。安装后 Dash 会自动发现该入口点；导入包即可完成集成注册。
