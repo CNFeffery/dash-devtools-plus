@@ -5,26 +5,22 @@
 <h1 align="center">Dash Devtools Plus</h1>
 
 <p align="center">
-  基于 Dash Hooks 的 Dash 应用开发期探查与辅助面板。
+  Dash 应用开发调试额外功能增强插件 ✨，基于 Dash 中的 Hooks 机制。
 </p>
 
 <p align="center">
   简体中文 | <a href="./README.md">English</a>
 </p>
 
-Dash Devtools Plus 在 Dash 原生 Dev Tools 中扩展出一个专注的抽屉面板，用于查看回调关系、探查组件、保存状态快照、梳理直接导入依赖、观察服务器资源，以及调整原生工具栏外观。它只会在明确开启调试的 Dash 会话中出现，避免在普通生产使用中暴露开发元数据。
+✨ Dash Devtools Plus 为 Dash 原生 Dev Tools 加入一块聚焦的抽屉面板：查回调、探组件、存状态、理依赖、看资源、换外观，同时始终保留正在运行的应用页面。它只会在明确开启调试的 Dash 会话中出现，避免在普通生产使用中暴露开发元数据。
 
-## 打开 Devtools Plus
+## 🚀 打开 Devtools Plus
 
-以调试模式启动 Dash 应用后，在原生右下角工具栏中点击 **Devtools Plus**。
+以调试模式启动 Dash 应用后，在原生右下角工具栏中点击 **Devtools Plus**。抽屉会覆盖在应用上方，随时可以开始深入查看。
 
-![从原生工具栏打开 Dash Devtools Plus](./imgs/docs/entry-point.png)
+![Dash Devtools Plus 中文主面板](./imgs/docs/main-panel-zh-CN.png)
 
-抽屉打开后，仍可同时看到正在运行的应用页面。
-
-![Dash Devtools Plus 主面板](./imgs/docs/main-panel.png)
-
-## 快速开始
+## ⚡ 快速开始
 
 ```bash
 pip install dash-devtools-plus
@@ -47,7 +43,7 @@ if __name__ == "__main__":
 
 完整说明见[快速开始](./docs/zh-CN/quick-start.md)。
 
-## 功能板块
+## 🧭 功能板块
 
 | 工作区 | 能做什么 | 功能文档 |
 | --- | --- | --- |
@@ -58,7 +54,7 @@ if __name__ == "__main__":
 | 依赖库 | 按标准库、Dash 组件库、Dash Hooks 库和其他库整理项目直接导入项。 | [查看说明](./docs/zh-CN/features/dependencies.md) |
 | 工具条换肤 | 预览并应用 Dash 原生 Dev Tools 工具栏与错误展示主题。 | [查看说明](./docs/zh-CN/features/toolbar-skins.md) |
 
-## 配置
+## ⚙️ 配置
 
 ```python
 from pathlib import Path
@@ -82,7 +78,7 @@ configure_devtools_plus(
 
 配置行为、校验规则和容器服务端连接本地编辑器的示例见[配置参数](./docs/zh-CN/configuration.md)。
 
-## 示例应用
+## 🧪 示例应用
 
 [`examples/`](./examples/) 中提供了三个复杂度递进的应用：
 
@@ -94,7 +90,7 @@ configure_devtools_plus(
 
 它们默认共用 `8050` 端口，请一次只运行一个。使用完整回调实验室前请阅读[示例应用](./docs/zh-CN/examples.md)。
 
-## 开发
+## 🛠️ 开发
 
 按仓库约定配置开发环境后，运行：
 
@@ -113,7 +109,7 @@ ruff format --check .
 
 前端构建产物会写入 `dash_devtools_plus/assets/`；修改前端源码后应重新构建并提交这些发布资源。
 
-## 文档导航
+## 🗺️ 文档导航
 
 - [中文文档中心](./docs/zh-CN/README.md)
 - [快速开始](./docs/zh-CN/quick-start.md)
@@ -121,6 +117,6 @@ ruff format --check .
 - [示例应用](./docs/zh-CN/examples.md)
 - [English documentation index](./docs/en/README.md)
 
-## 开源协议
+## 📄 开源协议
 
 本项目基于 [MIT License](./LICENSE) 开源。

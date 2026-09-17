@@ -1,6 +1,6 @@
-# Documentation
+# 📚 Documentation
 
-This directory contains the English documentation for Dash Devtools Plus.
+Your friendly map for exploring Dash Devtools Plus—from a first launch to a focused deep dive. ✨
 
 | Topic | Description |
 | --- | --- |
@@ -9,7 +9,9 @@ This directory contains the English documentation for Dash Devtools Plus.
 | [Example applications](examples.md) | Run the three bundled applications by increasing complexity. |
 | [Feature reference](#feature-reference) | Open the documentation for an individual workspace. |
 
-## Feature reference
+<a id="feature-reference"></a>
+
+## 🧭 Feature reference
 
 | Workspace | What it helps you inspect | Documentation |
 | --- | --- | --- |

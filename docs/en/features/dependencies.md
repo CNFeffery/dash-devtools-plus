@@ -1,10 +1,12 @@
-# Imported dependencies
+# 🧩 Imported dependencies
+
+> ✨ See the libraries your project actually imports, without being distracted by the entire environment.
 
 The dependency workspace summarizes libraries directly imported by the project source tree, rather than every package installed in the Python environment.
 
 ![Imported dependencies](../../../imgs/docs/dependencies.png)
 
-## Categories
+## 🗂️ Categories
 
 | Category | Detection result |
 | --- | --- |
@@ -15,7 +17,7 @@ The dependency workspace summarizes libraries directly imported by the project s
 
 Use category cards, the category selector, and search to narrow the table. The table shows the library, category, installed version when available, imported module names, and the runtime module count.
 
-## Expanded details
+## 🔽 Expanded details
 
 Rows for Dash component and Hook libraries can expand:
 

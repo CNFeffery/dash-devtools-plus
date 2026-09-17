@@ -1,14 +1,14 @@
-# Quick start
+# ⚡ Quick start
 
-Dash Devtools Plus is a development-only assistant built on the Dash Hooks mechanism. It adds a workspace to Dash's native Dev Tools toolbar; it does not replace the toolbar or modify production behavior.
+Dash Devtools Plus is a Dash application development and debugging enhancement plugin ✨, powered by Dash Hooks. It adds a workspace to Dash's native Dev Tools toolbar; it does not replace the toolbar or modify production behavior.
 
-## Requirements
+## ✅ Requirements
 
 - Python 3.9 or later
 - Dash 3.4.0 or later
 - A Dash app started with both debug mode and the native Dev Tools UI enabled
 
-## Install
+## 📦 Install
 
 ```bash
 pip install dash-devtools-plus
@@ -16,7 +16,7 @@ pip install dash-devtools-plus
 
 The package exposes a `dash_hooks` entry point. Dash discovers it when the package is installed, so importing the package is enough to register the integration.
 
-## Minimal application
+## 🪄 Minimal application
 
 Call `configure_devtools_plus` before constructing `Dash` when you want to set options. The call is optional if the defaults work for your project.
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
 Open the application, then select **Devtools Plus** in Dash's native bottom-right toolbar.
 
-## When the panel is unavailable
+## 🧯 When the panel is unavailable
 
 The integration intentionally stays hidden unless both conditions are true:
 

@@ -1,10 +1,12 @@
-# Server resource monitor
+# 📡 Server resource monitor
+
+> ✨ Keep a small, live pulse on the machine behind your Dash app while you build.
 
 The server workspace gives a compact, live view of the process host while you develop a Dash application.
 
 ![Server resource monitor](../../../imgs/docs/server-metrics.png)
 
-## What it shows
+## 👀 What it shows
 
 | Area | Information |
 | --- | --- |
@@ -14,7 +16,7 @@ The server workspace gives a compact, live view of the process host while you de
 
 Use the refresh action when you need an immediate sample. Telemetry is served only to an explicitly debug-enabled Devtools Plus session; it is not a production monitoring system.
 
-## Practical use
+## 💡 Practical use
 
 - Confirm memory behavior while a callback updates a large figure or layout.
 - Check whether a slow local interaction coincides with CPU pressure.

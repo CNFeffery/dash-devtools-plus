@@ -1,14 +1,14 @@
-# Callback relationships
+# 🔗 Callback relationships
 
-The callback workspace turns Dash's registered callback list into a searchable development view.
+Follow every callback edge without losing the thread: this workspace turns Dash's registered callback list into a searchable development view. ✨
 
 ![Callback relationships](../../../imgs/docs/callbacks.png)
 
-## Browse and filter
+## 🔎 Browse and filter
 
 Search callback names, docstrings, source files, inputs, outputs, and state. Combine this with server/client and visibility filters to narrow a large application graph.
 
-## Read a callback row
+## 📖 Read a callback row
 
 | Column | Meaning |
 | --- | --- |
@@ -20,6 +20,6 @@ Search callback names, docstrings, source files, inputs, outputs, and state. Com
 
 The details view also surfaces supported Dash metadata such as initial-call behavior, optional dependencies, background execution, dynamic registration, persistence, WebSocket use, no-output callbacks, MCP exposure, and `running` mappings.
 
-## Scope and safety
+## 🛡️ Scope and safety
 
 Only callback source files under `project_root` are treated as project sources. Set `project_root` and `editor_project_root` when server paths and local editor paths differ.

@@ -1,10 +1,12 @@
-# Toolbar skins
+# 🎨 Toolbar skins
+
+> ✨ Give Dash's native Dev Tools a look that matches your development desk.
 
 This workspace changes the appearance of Dash's native Dev Tools toolbar and error display while retaining the native workflow.
 
 ![Toolbar skin choices](../../../imgs/docs/toolbar-skins.png)
 
-## Available themes
+## 🌈 Available themes
 
 | Theme | Character |
 | --- | --- |

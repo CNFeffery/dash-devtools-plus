@@ -5,26 +5,22 @@
 <h1 align="center">Dash Devtools Plus</h1>
 
 <p align="center">
-  A development-only workspace for inspecting and understanding Dash applications, powered by Dash Hooks.
+  A Dash development and debugging enhancement plugin ✨, powered by Dash Hooks.
 </p>
 
 <p align="center">
   English | <a href="./README-zh_CN.md">简体中文</a>
 </p>
 
-Dash Devtools Plus extends Dash's native Dev Tools with a focused drawer for callback relationships, component inspection, state snapshots, direct imports, server resources, and toolbar appearance. It is available only in an explicitly debug-enabled Dash session, so development metadata stays out of ordinary production use.
+✨ Dash Devtools Plus adds a focused drawer to Dash's native Dev Tools: trace callbacks, inspect components, capture state, understand direct imports, watch server resources, and tailor the toolbar—all while keeping the running app in view. It is available only in an explicitly debug-enabled Dash session, so development metadata stays out of ordinary production use.
 
-## Open Devtools Plus
+## 🚀 Open Devtools Plus
 
-Start a Dash application in debug mode, then select **Devtools Plus** from the native toolbar in the lower-right corner.
+Start a Dash application in debug mode, then select **Devtools Plus** from the native toolbar in the lower-right corner. The drawer opens over the application, ready for a closer look.
 
-![Open Dash Devtools Plus from the native toolbar](./imgs/docs/entry-point.png)
+![Dash Devtools Plus main panel in English](./imgs/docs/main-panel-en.png)
 
-The drawer keeps the running application visible while you inspect it.
-
-![Dash Devtools Plus main panel](./imgs/docs/main-panel.png)
-
-## Quick start
+## ⚡ Quick start
 
 ```bash
 pip install dash-devtools-plus
@@ -47,7 +43,7 @@ The package is discovered through Dash Hooks after installation. When configurat
 
 For full installation notes, see [Quick start](./docs/en/quick-start.md).
 
-## Workspaces
+## 🧭 Workspaces
 
 | Workspace | What it provides | Documentation |
 | --- | --- | --- |
@@ -58,7 +54,7 @@ For full installation notes, see [Quick start](./docs/en/quick-start.md).
 | Imported dependencies | Direct project imports grouped as standard library, Dash components, Dash Hooks, or other libraries. | [Open guide](./docs/en/features/dependencies.md) |
 | Toolbar skins | Preview and apply native Dash Dev Tools toolbar and error-display themes. | [Open guide](./docs/en/features/toolbar-skins.md) |
 
-## Configuration
+## ⚙️ Configuration
 
 ```python
 from pathlib import Path
@@ -82,7 +78,7 @@ configure_devtools_plus(
 
 See [Configuration](./docs/en/configuration.md) for behavior, validation rules, and container-to-local editor examples.
 
-## Example applications
+## 🧪 Example applications
 
 Three applications in [`examples/`](./examples/) cover increasingly complex use cases:
 
@@ -94,7 +90,7 @@ Three applications in [`examples/`](./examples/) cover increasingly complex use 
 
 They share port `8050`; run one at a time. Read [Example applications](./docs/en/examples.md) before using the comprehensive callback laboratory.
 
-## Development
+## 🛠️ Development
 
 Use the project environments described by the repository setup, then run:
 
@@ -113,7 +109,7 @@ ruff format --check .
 
 The frontend build writes distributable assets to `dash_devtools_plus/assets/`; commit those generated files whenever frontend source changes.
 
-## Documentation map
+## 🗺️ Documentation map
 
 - [English documentation index](./docs/en/README.md)
 - [Quick start](./docs/en/quick-start.md)
@@ -121,6 +117,6 @@ The frontend build writes distributable assets to `dash_devtools_plus/assets/`; 
 - [Example applications](./docs/en/examples.md)
 - [中文文档中心](./docs/zh-CN/README.md)
 
-## License
+## 📄 License
 
 Released under the [MIT License](./LICENSE).

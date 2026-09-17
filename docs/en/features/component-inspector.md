@@ -1,17 +1,19 @@
-# Component inspector
+# 🔍 Component inspector
+
+> ✨ Click what you see, then follow it back to the Dash component that owns it.
 
 The component inspector maps a rendered page element back to the closest owning Dash component.
 
 ![Component inspector resolved a DataTable](../../../imgs/docs/component-inspector.png)
 
-## Workflow
+## 🧭 Workflow
 
 1. Open **Component inspector** and select **Start component inspection**.
 2. Move over the running application; the nearest supported Dash component is highlighted.
 3. Click an element to reopen the panel with its component identity, DOM mapping, layout path, and current props.
 4. Press `Esc` to cancel inspection without selecting an element.
 
-## Inspection output
+## 🧩 Inspection output
 
 | Section | What it answers |
 | --- | --- |

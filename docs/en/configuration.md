@@ -1,4 +1,4 @@
-# Configuration
+# ⚙️ Configuration
 
 Configure Dash Devtools Plus before creating the `Dash` application instance:
 
@@ -15,7 +15,7 @@ configure_devtools_plus(
 )
 ```
 
-## Parameters
+## 🎛️ Parameters
 
 | Parameter | Type | Default | Purpose |
 | --- | --- | --- | --- |
@@ -25,7 +25,7 @@ configure_devtools_plus(
 | `project_root` | `str`, `Path`, or `None` | `None` | Server-side project boundary for source locations and direct-import dependency discovery. It must be an existing directory. |
 | `editor_project_root` | `str`, `Path`, or `None` | `None` | Client-visible project root. Use it when the Dash server and browser/IDE use different filesystem paths. |
 
-## Local server and local editor
+## 💻 Local server and local editor
 
 For a typical local checkout, `project_root` is enough:
 
@@ -33,7 +33,7 @@ For a typical local checkout, `project_root` is enough:
 configure_devtools_plus(project_root=Path(__file__).resolve().parent)
 ```
 
-## Containerized server and local editor
+## 📦 Containerized server and local editor
 
 The server may see `/app` while your editor sees a Windows or macOS checkout. Keep the server boundary and editor target separate:
 
@@ -47,6 +47,6 @@ configure_devtools_plus(
 
 `project_root` is also the security boundary for source metadata: files outside it are not exposed as project callback sources or direct project imports.
 
-## Multiple Dash applications
+## 🧩 Multiple Dash applications
 
 Registration is idempotent. A process can create multiple Dash applications, and Devtools Plus binds its debug state and component properties to the owning app. Configure shared defaults before creating those apps.
