@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./imgs/devtools-plus-logo.svg" width="104" alt="Dash Devtools Plus logo">
+  <img src="./imgs/devtools-plus-logo.svg" width="144" alt="Dash Devtools Plus logo">
 </p>
 
 <h1 align="center">Dash Devtools Plus</h1>
