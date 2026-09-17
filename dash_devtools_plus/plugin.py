@@ -22,6 +22,11 @@ from dash import get_app, hooks
 from .hook_inventory import build_hook_inventory, capture_app_hook_snapshot
 from .server_metrics import collect_server_metrics
 
+try:
+    from importlib.metadata import packages_distributions
+except ImportError:  # Python 3.9 lacks this standard-library API.
+    from importlib_metadata import packages_distributions
+
 
 _LOCK = Lock()
 _REGISTERED = False
@@ -648,7 +653,7 @@ def _module_distribution_map() -> dict[str, tuple[str, ...]]:
 
     return {
         module: tuple(sorted(distributions, key=str.casefold))
-        for module, distributions in metadata.packages_distributions().items()
+        for module, distributions in packages_distributions().items()
     }
 
 

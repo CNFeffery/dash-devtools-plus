@@ -20,6 +20,11 @@ from weakref import WeakKeyDictionary
 import dash
 from dash import hooks
 
+try:
+    from importlib.metadata import packages_distributions
+except ImportError:  # Python 3.9 lacks this standard-library API.
+    from importlib_metadata import packages_distributions
+
 
 _SNAPSHOT_LOCK = Lock()
 _APP_SNAPSHOTS: WeakKeyDictionary[Any, frozenset[int]] = WeakKeyDictionary()
@@ -292,7 +297,7 @@ def _manual_library(module: str) -> dict[str, Any]:
         distribution_name = module
         version = None
     else:
-        distribution_names = metadata.packages_distributions().get(top_level, ())
+        distribution_names = packages_distributions().get(top_level, ())
         distribution_name = distribution_names[0] if distribution_names else top_level
         try:
             version = metadata.version(distribution_name)
