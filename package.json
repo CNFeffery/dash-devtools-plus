@@ -1,7 +1,7 @@
 {
   "name": "dash-devtools-plus-frontend",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "scripts": {
     "build": "vite build",
@@ -9,9 +9,9 @@
     "test:frontend": "node --test frontend/tests/*.test.js"
   },
   "dependencies": {
-    "@ant-design/icons": "6.3.4",
+    "@ant-design/icons": "^6.3.4",
     "@antv/g2": "^5.4.8",
-    "antd": "6.6.3",
+    "antd": "^6.6.3",
     "simple-icons": "^16.31.0"
   },
   "devDependencies": {

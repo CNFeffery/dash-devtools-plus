@@ -6,7 +6,7 @@ Your friendly map for exploring Dash Devtools Plus—from a first launch to a fo
 | --- | --- |
 | [Quick start](quick-start.md) | Install the package and enable the panel in a Dash app. |
 | [Configuration](configuration.md) | Configure language, accent color, source roots, and editor integration. |
-| [Example applications](examples.md) | Run the three bundled applications by increasing complexity. |
+| [Example applications](examples.md) | Run the four bundled applications by increasing complexity. |
 | [Feature reference](#feature-reference) | Open the documentation for an individual workspace. |
 
 <a id="feature-reference"></a>

@@ -1,0 +1,136 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap");
+
+.fastapi-page {
+  --fastapi-ink: #18211e;
+  --fastapi-paper: #f8f5ea;
+  --fastapi-mint: #c7f36b;
+  --fastapi-line: #d8e0d4;
+
+  min-height: 100vh;
+  overflow: auto;
+  background: linear-gradient(135deg, #edf2e9, #f8f5ea 55%, #e4eee2);
+  color: var(--fastapi-ink);
+  font-family: "Manrope", sans-serif;
+}
+
+.fastapi-page,
+.fastapi-page * {
+  box-sizing: border-box;
+}
+
+.fastapi-shell {
+  width: min(760px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 88px 0 40px;
+}
+
+.fastapi-shell .hero { margin-bottom: 40px; }
+
+.fastapi-shell .eyebrow,
+.fastapi-shell .card-label,
+.fastapi-shell .stream-status,
+.fastapi-shell footer {
+  font-family: "DM Mono", monospace;
+  letter-spacing: 0.06em;
+}
+
+.fastapi-shell .eyebrow {
+  margin: 0 0 14px;
+  color: #54715b;
+  font-size: 11px;
+}
+
+.fastapi-shell h1 {
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-size: clamp(42px, 7vw, 68px);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.96;
+}
+
+.fastapi-shell .lede {
+  max-width: 580px;
+  margin: 20px 0 0;
+  color: #536258;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.fastapi-shell .demo-card {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--fastapi-line);
+  border-radius: 18px;
+  background: var(--fastapi-line);
+  box-shadow: 0 18px 45px rgba(28, 54, 38, 0.08);
+}
+
+.fastapi-shell .control-row {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 20px;
+  padding: 30px;
+  background: rgba(255, 255, 252, 0.88);
+}
+
+.fastapi-shell .step-number {
+  color: #6f9272;
+  font-family: "DM Mono", monospace;
+  font-size: 12px;
+}
+
+.fastapi-shell .card-label {
+  margin: 0 0 9px;
+  color: #6f9272;
+  font-size: 10px;
+}
+
+.fastapi-shell .live-clock {
+  color: var(--fastapi-ink);
+  font-family: "Fraunces", serif;
+  font-size: clamp(48px, 9vw, 80px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.fastapi-shell .stream-status {
+  min-height: 1.2em;
+  margin: 13px 0 0;
+  color: #54715b;
+  font-size: 11px;
+}
+
+.fastapi-shell label {
+  display: block;
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fastapi-shell .slider-row { padding-bottom: 38px; }
+.fastapi-shell .rc-slider-track { background-color: #709e63; }
+.fastapi-shell .rc-slider-handle { border-color: #709e63; background-color: var(--fastapi-mint); }
+.fastapi-shell .rc-slider-dot-active { border-color: #709e63; }
+
+.fastapi-shell .rc-slider-mark-text {
+  color: #69776d;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+}
+
+.fastapi-shell footer {
+  margin-top: 24px;
+  color: #68776c;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.fastapi-shell footer a { color: #355f43; text-underline-offset: 3px; }
+
+@media (max-width: 540px) {
+  .fastapi-shell { width: min(100% - 28px, 760px); padding-top: 54px; }
+  .fastapi-shell .control-row { grid-template-columns: 38px 1fr; gap: 12px; padding: 22px 18px; }
+}

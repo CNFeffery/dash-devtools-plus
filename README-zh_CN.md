@@ -80,15 +80,26 @@ configure_devtools_plus(
 
 ## 🧪 示例应用
 
-[`examples/`](./examples/) 中提供了三个复杂度递进的应用：
+[`examples/`](./examples/) 中提供了四个复杂度递进的应用：
 
 | 示例 | 重点 | 运行方式 |
 | --- | --- | --- |
 | `simple` | 一个服务端回调和一个客户端回调。 | `python examples/simple/app.py` |
 | `intermediate` | 使用 Dash 内置组件构建的旅行预算规划器。 | `python examples/intermediate/app.py` |
 | `comprehensive` | 用于全功能验收的大型回调实验室。 | `python examples/comprehensive/app.py` |
+| `fastapi` | 使用持久 WebSocket 回调和 FastAPI 接口的服务端时间流演示。 | `python examples/fastapi/app.py` |
 
 它们默认共用 `8050` 端口，请一次只运行一个。使用完整回调实验室前请阅读[示例应用](./docs/zh-CN/examples.md)。
+
+## FastAPI 后端
+
+FastAPI 后端要求 Dash 4.2 及以上版本。安装可选依赖后，`fastapi` 示例会用
+`websocket_callbacks=True` 建立持久连接，通过 `ctx.websocket.get_prop` 读取
+浏览器状态，并用 `set_props` 流式推送服务端时间：
+
+```bash
+pip install "dash-devtools-plus[fastapi]"
+```
 
 ## 🛠️ 开发
 

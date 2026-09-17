@@ -11,7 +11,9 @@ from dash import hooks
 def annotate_demo_app(app):
     """Expose a harmless marker that is useful while inspecting the example."""
 
-    app.server.config["DEVTOOLS_PLUS_DEMO_HOOKS"] = True
+    # Keep this demonstration hook independent of the concrete Dash backend.
+    # Flask exposes ``server.config`` while FastAPI intentionally does not.
+    app._devtools_plus_demo_hooks = True
 
 
 @hooks.layout(priority=20)

@@ -35,6 +35,38 @@ if __name__ == "__main__":
 
 Open the application, then select **Devtools Plus** in Dash's native bottom-right toolbar.
 
+## FastAPI backend
+
+FastAPI backends require Dash 4.2 or later. Install the optional dependency
+set, then either use `backend="fastapi"` or pass an existing `FastAPI` server
+to `Dash`:
+
+```bash
+pip install "dash-devtools-plus[fastapi]"
+```
+
+```python
+from fastapi import FastAPI
+from dash import Dash, html
+
+server = FastAPI()
+app = Dash(__name__, server=server)
+app.layout = html.Div("Dash with FastAPI")
+```
+
+Run an application that supplies its own FastAPI server with Uvicorn. The
+repository's [`fastapi` example](../../examples/fastapi/app.py) includes a
+Dash callback and an asynchronous `/api/health` endpoint.
+
+### Streaming with WebSocket callbacks
+
+The FastAPI example also demonstrates Dash 4.2's WebSocket callbacks. It
+enables `websocket_callbacks=True`, starts an `async def` persistent callback
+for each browser session, reads the current controls with
+`await ctx.websocket.get_prop(...)`, and streams component updates with
+`set_props(...)`. The optional FastAPI dependency installs `uvicorn[standard]`,
+which provides the WebSocket implementation needed by Uvicorn.
+
 ## 🧯 When the panel is unavailable
 
 The integration intentionally stays hidden unless both conditions are true:

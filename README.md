@@ -80,15 +80,30 @@ See [Configuration](./docs/en/configuration.md) for behavior, validation rules, 
 
 ## 🧪 Example applications
 
-Three applications in [`examples/`](./examples/) cover increasingly complex use cases:
+Four applications in [`examples/`](./examples/) cover increasingly complex use cases:
 
 | Example | Focus | Run |
 | --- | --- | --- |
 | `simple` | One server callback and one clientside callback. | `python examples/simple/app.py` |
 | `intermediate` | A travel-budget planner built with Dash core components. | `python examples/intermediate/app.py` |
 | `comprehensive` | A large callback laboratory for acceptance testing all workspaces. | `python examples/comprehensive/app.py` |
+| `fastapi` | A WebSocket-powered server-time stream with FastAPI APIs. | `python examples/fastapi/app.py` |
 
 They share port `8050`; run one at a time. Read [Example applications](./docs/en/examples.md) before using the comprehensive callback laboratory.
+
+## FastAPI backend
+
+Dash's FastAPI backend requires Dash 4.2 or later. Install the optional extra,
+then construct Dash with `backend="fastapi"` or provide an existing FastAPI
+server:
+
+```bash
+pip install "dash-devtools-plus[fastapi]"
+```
+
+See the [`fastapi` example](./examples/fastapi/app.py) for a small server-time
+stream that uses `websocket_callbacks=True`, `ctx.websocket.get_prop`, and
+`set_props`, alongside custom asynchronous FastAPI APIs.
 
 ## 🛠️ Development
 

@@ -35,6 +35,36 @@ if __name__ == "__main__":
 
 访问应用后，在 Dash 原生右下角工具栏中点击 **Devtools Plus**。
 
+## FastAPI 后端
+
+FastAPI 后端要求 Dash 版本不低于 4.2。安装可选依赖后，可以通过
+`backend="fastapi"` 创建后端，也可以将已有的 `FastAPI` 服务传给 `Dash`：
+
+```bash
+pip install "dash-devtools-plus[fastapi]"
+```
+
+```python
+from fastapi import FastAPI
+from dash import Dash, html
+
+server = FastAPI()
+app = Dash(__name__, server=server)
+app.layout = html.Div("Dash with FastAPI")
+```
+
+自行提供 FastAPI 服务时，请使用 Uvicorn 启动。仓库中的
+[`fastapi` 示例](../../examples/fastapi/app.py) 同时包含 Dash 回调和异步
+`/api/health` 接口。
+
+### 使用 WebSocket 流式回调
+
+FastAPI 示例还展示了 Dash 4.2 的 WebSocket 回调：通过
+`websocket_callbacks=True` 启用传输，为每个浏览器会话运行一个 `async def`
+持久回调，使用 `await ctx.websocket.get_prop(...)` 读取当前控件，再通过
+`set_props(...)` 流式更新组件内容。FastAPI 可选依赖会安装
+`uvicorn[standard]`，其中包含 Uvicorn 所需的 WebSocket 实现。
+
 ## 🧯 面板没有出现时
 
 插件只会在以下两个条件同时满足时显示：
