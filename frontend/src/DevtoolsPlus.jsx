@@ -22,6 +22,7 @@ import StateSnapshotsPanel from "./StateSnapshotsPanel";
 import {createTranslator, normalizeLocale} from "./i18n";
 import {getAntdLocale} from "./i18n/antd";
 import {createDevtoolsTheme} from "./theme";
+import {usesInternalTabScroll} from "./utils";
 import {syncNativeErrorFrameTheme} from "./nativeErrorFrameTheme";
 import {
   NATIVE_DEVTOOLS_THEME_IDS,
@@ -203,7 +204,7 @@ function EnabledDevtoolsPlus({
       >
         <div className="ddp-content">
           <Tabs
-            className={`ddp-main-tabs ${["appearance", "callbacks"].includes(activeTab) ? "has-pane-scroll" : ""}`}
+            className={`ddp-main-tabs ${usesInternalTabScroll(activeTab) ? "has-pane-scroll" : ""}`}
             activeKey={activeTab}
             onChange={setActiveTab}
             animated={false}
