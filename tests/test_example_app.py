@@ -150,8 +150,9 @@ def test_callback_metadata_includes_relative_python_source_locations():
         "path": "examples/comprehensive/app.py",
         "line": inspect.getsourcelines(publish_seed)[1],
     }
+    workspace_uri_path = workspace.as_posix().lstrip("/")
     assert unquote(source["editorUri"]) == (
-        f"vscode://file/{workspace.as_posix()}"
+        f"vscode://file/{workspace_uri_path}"
         f"/examples/comprehensive/app.py:{inspect.getsourcelines(publish_seed)[1]}:1"
     )
     assert [target["id"] for target in source["editorUris"]] == [
