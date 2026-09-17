@@ -74,7 +74,7 @@ function EnabledDevtoolsPlus({
   const buttonClassName = useDevtoolMenuButtonClassName(POPUP_ID);
   const [locale, setLocale] = useState(() => initialLocale(defaultLocale));
   const [nativeDevtoolsTheme, setNativeDevtoolsTheme] = useState(initialNativeDevtoolsTheme);
-  const [activeTab, setActiveTab] = useState("server");
+  const [activeTab, setActiveTab] = useState("callbacks");
   const [inspectionTrail, setInspectionTrail] = useState([]);
   const inspection = inspectionTrail[inspectionTrail.length - 1] || null;
   const [isInspecting, setIsInspecting] = useState(false);
@@ -210,16 +210,6 @@ function EnabledDevtoolsPlus({
             destroyOnHidden={false}
             items={[
               {
-                key: "server",
-                label: <span className="ddp-tab-label"><DashboardOutlined />{t("serverMetricsNav")}</span>,
-                children: (
-                  <ServerMetricsPanel
-                    monitor={serverMetrics}
-                    t={t}
-                  />
-                ),
-              },
-              {
                 key: "callbacks",
                 label: <span className="ddp-tab-label"><ApartmentOutlined />{t("callbacksNav")}</span>,
                 children: (
@@ -227,6 +217,16 @@ function EnabledDevtoolsPlus({
                     endpoint={callbacksEndpoint}
                     isActive={isOpen && activeTab === "callbacks"}
                     accentColor={accentColor}
+                    t={t}
+                  />
+                ),
+              },
+              {
+                key: "server",
+                label: <span className="ddp-tab-label"><DashboardOutlined />{t("serverMetricsNav")}</span>,
+                children: (
+                  <ServerMetricsPanel
+                    monitor={serverMetrics}
                     t={t}
                   />
                 ),
