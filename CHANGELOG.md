@@ -1,0 +1,14 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+## [0.1.2] - Unreleased
+
+### Added
+
+- Added support for Dash applications using the FastAPI backend, with an example powered by persistent WebSocket callbacks.
+
+### Fixed
+
+- Fixed vertical scrolling in the Component Inspector panel.
+- Prevented Component Inspector probing from triggering interactions in the inspected application.

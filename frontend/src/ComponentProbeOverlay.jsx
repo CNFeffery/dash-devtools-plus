@@ -2,6 +2,25 @@ import React, {useEffect, useState} from "react";
 import {createPortal} from "react-dom";
 import {AimOutlined} from "@ant-design/icons";
 import {findClosestDashComponent} from "./componentInspector";
+import {blockProbedInteraction, selectProbedComponent} from "./componentProbeEvents";
+
+const BLOCKED_POINTER_EVENTS = [
+  "pointerup",
+  "pointercancel",
+  "mousedown",
+  "mouseup",
+  "click",
+  "dblclick",
+  "contextmenu",
+  "touchstart",
+  "touchmove",
+  "touchend",
+  "touchcancel",
+  "dragstart",
+  "drop",
+];
+
+const BLOCKED_KEYBOARD_EVENTS = ["keydown", "keyup", "keypress"];
 
 export default function ComponentProbeOverlay({active, accentColor, onCancel, onSelect, t}) {
   const [candidate, setCandidate] = useState(null);
@@ -20,21 +39,19 @@ export default function ComponentProbeOverlay({active, accentColor, onCancel, on
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(() => setCandidate(findClosestDashComponent(target)));
     };
-    const onPointerMove = (event) => inspectTarget(event.target);
-    const onClick = (event) => {
-      const result = findClosestDashComponent(event.target);
-      if (!result) return;
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      onSelect(result);
+    const onPointerMove = (event) => {
+      inspectTarget(event.target);
+      blockProbedInteraction(event);
     };
+    const onPointerDown = (event) => {
+      selectProbedComponent(event, findClosestDashComponent, onSelect);
+    };
+    const onPointerInteraction = (event) => blockProbedInteraction(event);
     const onKeyDown = (event) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      event.stopPropagation();
-      onCancel();
+      blockProbedInteraction(event);
+      if (event.key === "Escape") onCancel();
     };
+    const onKeyboardInteraction = (event) => blockProbedInteraction(event);
     const onViewportChange = () => {
       if (lastTarget?.isConnected) setCandidate(findClosestDashComponent(lastTarget));
     };
@@ -42,8 +59,14 @@ export default function ComponentProbeOverlay({active, accentColor, onCancel, on
     document.documentElement.classList.add("ddp-component-probing");
     const timer = window.setTimeout(() => {
       window.addEventListener("pointermove", onPointerMove, true);
-      window.addEventListener("click", onClick, true);
+      window.addEventListener("pointerdown", onPointerDown, true);
+      BLOCKED_POINTER_EVENTS.forEach((eventName) => {
+        window.addEventListener(eventName, onPointerInteraction, true);
+      });
       window.addEventListener("keydown", onKeyDown, true);
+      BLOCKED_KEYBOARD_EVENTS.filter((eventName) => eventName !== "keydown").forEach((eventName) => {
+        window.addEventListener(eventName, onKeyboardInteraction, true);
+      });
       window.addEventListener("scroll", onViewportChange, true);
       window.addEventListener("resize", onViewportChange, true);
     }, 260);
@@ -53,8 +76,14 @@ export default function ComponentProbeOverlay({active, accentColor, onCancel, on
       window.cancelAnimationFrame(frame);
       document.documentElement.classList.remove("ddp-component-probing");
       window.removeEventListener("pointermove", onPointerMove, true);
-      window.removeEventListener("click", onClick, true);
+      window.removeEventListener("pointerdown", onPointerDown, true);
+      BLOCKED_POINTER_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, onPointerInteraction, true);
+      });
       window.removeEventListener("keydown", onKeyDown, true);
+      BLOCKED_KEYBOARD_EVENTS.filter((eventName) => eventName !== "keydown").forEach((eventName) => {
+        window.removeEventListener(eventName, onKeyboardInteraction, true);
+      });
       window.removeEventListener("scroll", onViewportChange, true);
       window.removeEventListener("resize", onViewportChange, true);
     };
@@ -82,4 +111,3 @@ export default function ComponentProbeOverlay({active, accentColor, onCancel, on
     document.body,
   );
 }
-
