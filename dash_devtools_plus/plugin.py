@@ -449,7 +449,9 @@ def _source_tree(source_path_value: str, modified_time_ns: int) -> ast.Module:
         return ast.parse(source_file.read(), filename=source_path_value)
 
 
-def _definition_for_qualname(nodes: list[ast.stmt], parts: list[str]) -> Optional[ast.AST]:
+def _definition_for_qualname(
+    nodes: list[ast.stmt], parts: list[str]
+) -> Optional[ast.AST]:
     """Find a function definition from its module-relative qualified name."""
 
     if not parts:
@@ -478,7 +480,10 @@ def _current_callback_source_line(callback: Any, source_path_value: str) -> int:
         if not isinstance(definition, (ast.FunctionDef, ast.AsyncFunctionDef)):
             return fallback_line
         return min(
-            [definition.lineno, *(decorator.lineno for decorator in definition.decorator_list)]
+            [
+                definition.lineno,
+                *(decorator.lineno for decorator in definition.decorator_list),
+            ]
         )
     except (OSError, SyntaxError, TypeError, UnicodeError, ValueError):
         return fallback_line

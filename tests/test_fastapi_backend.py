@@ -108,9 +108,7 @@ def test_fastapi_example_serves_dash_and_its_async_api():
     assert source["function"] == "stream_server_time"
     assert source["path"] == "examples/fastapi/app.py"
     assert source["line"] == inspect.getsourcelines(stream_server_time)[1]
-    assert source["editorUri"].endswith(
-        f"/examples/fastapi/app.py:{source['line']}:1"
-    )
+    assert source["editorUri"].endswith(f"/examples/fastapi/app.py:{source['line']}:1")
     assert app._websocket_callbacks is True
     assert any(
         callback.get("websocket") and callback.get("persistent")

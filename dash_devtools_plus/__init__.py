@@ -2,7 +2,7 @@
 
 from .plugin import configure_devtools_plus, register
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 # Loading the ``dash_hooks`` entry point imports this module. Registration is
 # idempotent, so explicit imports and automatic discovery can safely coexist.

@@ -241,7 +241,7 @@ def test_hook_library_inventory_reports_entry_points_and_runtime_order():
     ]
     assert len(installed) == 1
     assert installed[0]["status"] == "registered"
-    assert installed[0]["version"] == "0.1.2"
+    assert installed[0]["version"] == "0.1.3"
     hook_types = {item["type"] for item in installed[0]["hookTypes"]}
     assert {"devtool", "routes", "script", "setup", "stylesheet"} <= hook_types
 
