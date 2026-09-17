@@ -9,9 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./README.md">English</a> ·
-  <a href="./docs/zh-CN/README.md">中文文档</a> ·
-  <a href="./docs/en/README.md">Documentation</a>
+  <a href="./README.md">English</a>
 </p>
 
 Dash Devtools Plus 在 Dash 原生 Dev Tools 中扩展出一个专注的抽屉面板，用于查看回调关系、探查组件、保存状态快照、梳理直接导入依赖、观察服务器资源，以及调整原生工具栏外观。它只会在明确开启调试的 Dash 会话中出现，避免在普通生产使用中暴露开发元数据。
