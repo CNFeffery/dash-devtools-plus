@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import sysconfig
+import tokenize
 from collections import Counter
 from functools import lru_cache, wraps
 from importlib import metadata
@@ -439,6 +440,50 @@ def _callback_docstring(callback: Any) -> Optional[str]:
         return None
 
 
+@lru_cache(maxsize=128)
+def _source_tree(source_path_value: str, modified_time_ns: int) -> ast.Module:
+    """Parse a source file using its declared encoding and cache its current AST."""
+
+    del modified_time_ns  # The cache key invalidates the entry when the file changes.
+    with tokenize.open(source_path_value) as source_file:
+        return ast.parse(source_file.read(), filename=source_path_value)
+
+
+def _definition_for_qualname(nodes: list[ast.stmt], parts: list[str]) -> Optional[ast.AST]:
+    """Find a function definition from its module-relative qualified name."""
+
+    if not parts:
+        return None
+    for node in nodes:
+        if not isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if node.name != parts[0]:
+            continue
+        if len(parts) == 1:
+            return node
+        return _definition_for_qualname(node.body, parts[1:])
+    return None
+
+
+def _current_callback_source_line(callback: Any, source_path_value: str) -> int:
+    """Locate a callback in the current source file, falling back to its code object."""
+
+    fallback_line = inspect.getsourcelines(callback)[1]
+    try:
+        source_path = Path(source_path_value).resolve()
+        qualname = getattr(callback, "__qualname__", "")
+        parts = [part for part in qualname.split(".") if part != "<locals>"]
+        tree = _source_tree(str(source_path), source_path.stat().st_mtime_ns)
+        definition = _definition_for_qualname(tree.body, parts)
+        if not isinstance(definition, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            return fallback_line
+        return min(
+            [definition.lineno, *(decorator.lineno for decorator in definition.decorator_list)]
+        )
+    except (OSError, SyntaxError, TypeError, UnicodeError, ValueError):
+        return fallback_line
+
+
 def _callback_source(callback: Any) -> dict[str, Any]:
     if callback is None:
         return {
@@ -455,7 +500,7 @@ def _callback_source(callback: Any) -> dict[str, Any]:
     try:
         original = inspect.unwrap(callback)
         source_path_value = inspect.getsourcefile(original) or inspect.getfile(original)
-        line = inspect.getsourcelines(original)[1]
+        line = _current_callback_source_line(original, source_path_value)
         return _source_location(
             source_path_value,
             line,

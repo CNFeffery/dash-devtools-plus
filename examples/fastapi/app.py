@@ -152,8 +152,10 @@ async def stream_server_time() -> None:
 if __name__ == "__main__":
     app.run(
         debug=True,
-        use_reloader=False,
+        # Dash's FastAPI backend delegates code reloading to Uvicorn. Keeping it
+        # enabled ensures callback metadata and the file open in the IDE refer
+        # to the same version of this example after a source edit.
+        reload=True,
         dev_tools_disable_version_check=True,
-        dev_tools_hot_reload=False,
         port=8050,
     )

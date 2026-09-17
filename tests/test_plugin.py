@@ -282,3 +282,24 @@ def test_callback_source_builds_mapped_ide_uris():
         assert disabled_source["editorUris"] == []
     finally:
         configure_devtools_plus()
+
+
+def test_callback_source_uses_current_definition_after_source_lines_move(tmp_path):
+    source_path = tmp_path / "callbacks.py"
+    callback_source = "@identity\ndef websocket_callback():\n    return None\n"
+    source_path.write_text(callback_source, encoding="utf-8")
+    namespace = {"identity": lambda function: function}
+    exec(compile(callback_source, str(source_path), "exec"), namespace)  # noqa: S102
+
+    # Simulate a development server retaining a function object while the
+    # source file changes before its reloader finishes restarting the worker.
+    source_path.write_text("\n" * 40 + callback_source, encoding="utf-8")
+
+    try:
+        configure_devtools_plus(editor=None, project_root=tmp_path)
+        source = plugin._callback_source(namespace["websocket_callback"])
+
+        assert source["path"] == "callbacks.py"
+        assert source["line"] == 41
+    finally:
+        configure_devtools_plus()

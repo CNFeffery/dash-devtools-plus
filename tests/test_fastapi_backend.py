@@ -4,6 +4,8 @@
 # ruff: noqa: E402
 from __future__ import annotations
 
+import inspect
+
 import pytest
 
 fastapi = pytest.importorskip("fastapi")
@@ -87,7 +89,7 @@ def test_fastapi_server_and_prefixed_devtools_routes_coexist():
 
 
 def test_fastapi_example_serves_dash_and_its_async_api():
-    from examples.fastapi.app import app, server
+    from examples.fastapi.app import app, server, stream_server_time
 
     enable_dev_tools(app)
     client = TestClient(server)
@@ -99,7 +101,16 @@ def test_fastapi_example_serves_dash_and_its_async_api():
         "backend": "fastapi",
     }
     assert client.get("/api/capabilities").json()["persistentCallback"] is True
-    assert client.get("/_dash-devtools-plus/callbacks").status_code == 200
+    callback_metadata = client.get("/_dash-devtools-plus/callbacks")
+
+    assert callback_metadata.status_code == 200
+    source = callback_metadata.json()[0]["source"]
+    assert source["function"] == "stream_server_time"
+    assert source["path"] == "examples/fastapi/app.py"
+    assert source["line"] == inspect.getsourcelines(stream_server_time)[1]
+    assert source["editorUri"].endswith(
+        f"/examples/fastapi/app.py:{source['line']}:1"
+    )
     assert app._websocket_callbacks is True
     assert any(
         callback.get("websocket") and callback.get("persistent")

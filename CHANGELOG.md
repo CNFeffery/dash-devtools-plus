@@ -12,3 +12,4 @@ All notable changes to this project are documented in this file.
 
 - Fixed vertical scrolling in the Component Inspector panel.
 - Prevented Component Inspector probing from triggering interactions in the inspected application.
+- Corrected callback source locations in FastAPI applications after source changes during development.
