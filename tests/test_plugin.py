@@ -1,6 +1,8 @@
 import inspect
 import json
+import sys
 from pathlib import Path
+from types import ModuleType, SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -25,7 +27,10 @@ def test_registration_is_idempotent_and_configurable():
     assert props["accentColor"] == "#00ffaa"
     assert isinstance(props["enabled"], bool)
     assert props["callbacksEndpoint"] == "_dash-devtools-plus/callbacks"
-    assert props["componentLibrariesEndpoint"] == "_dash-devtools-plus/component-libraries"
+    assert props["dependenciesEndpoint"] == "_dash-devtools-plus/dependencies"
+    assert (
+        props["componentLibrariesEndpoint"] == "_dash-devtools-plus/component-libraries"
+    )
     assert props["hookLibrariesEndpoint"] == "_dash-devtools-plus/hook-libraries"
     assert props["serverMetricsEndpoint"] == "_dash-devtools-plus/server-metrics"
     assert "metricsEndpoint" not in props
@@ -48,6 +53,7 @@ def test_devtools_config_has_no_metrics_route():
     "endpoint",
     [
         "/_dash-devtools-plus/callbacks",
+        "/_dash-devtools-plus/dependencies",
         "/_dash-devtools-plus/component-libraries",
         "/_dash-devtools-plus/hook-libraries",
         "/_dash-devtools-plus/server-metrics",
@@ -68,6 +74,7 @@ def test_all_routes_are_disabled_without_debug(endpoint):
     "endpoint",
     [
         "/_dash-devtools-plus/callbacks",
+        "/_dash-devtools-plus/dependencies",
         "/_dash-devtools-plus/component-libraries",
         "/_dash-devtools-plus/hook-libraries",
         "/_dash-devtools-plus/server-metrics",
@@ -125,6 +132,64 @@ def test_debug_mode_enables_frontend_and_routes_with_no_store_headers():
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store, max-age=0"
     assert response.headers["X-Content-Type-Options"] == "nosniff"
+
+
+def test_debug_routes_support_dash_3_flask_response_api():
+    app = Dash(__name__)
+    app.layout = html.Div("test")
+    app.enable_dev_tools(
+        debug=True,
+        dev_tools_ui=True,
+        dev_tools_disable_version_check=True,
+        dev_tools_hot_reload=False,
+    )
+    backend = app.backend
+    app.backend = None
+    try:
+        response = app.server.test_client().get("/_dash-devtools-plus/server-metrics")
+    finally:
+        app.backend = backend
+
+    assert response.status_code == 200
+    assert response.is_json
+    assert response.headers["Cache-Control"] == "no-store, max-age=0"
+
+
+def test_dependency_scan_does_not_recurse_into_project_virtualenv(
+    tmp_path, monkeypatch
+):
+    app_source = tmp_path / "app.py"
+    external_source = (
+        tmp_path / ".venv" / "Lib" / "site-packages" / "external" / "__init__.py"
+    )
+    transitive_source = external_source.parent.parent / "transitive.py"
+    external_source.parent.mkdir(parents=True)
+    app_source.write_text("import external\n", encoding="utf-8")
+    external_source.write_text("import transitive\n", encoding="utf-8")
+    transitive_source.write_text("", encoding="utf-8")
+
+    app_module = ModuleType("release_test_app")
+    app_module.__file__ = str(app_source)
+    external_module = ModuleType("external")
+    external_module.__file__ = str(external_source)
+    transitive_module = ModuleType("transitive")
+    transitive_module.__file__ = str(transitive_source)
+    monkeypatch.setitem(sys.modules, "release_test_app", app_module)
+    monkeypatch.setitem(sys.modules, "external", external_module)
+    monkeypatch.setitem(sys.modules, "transitive", transitive_module)
+    monkeypatch.setattr(plugin, "_PROJECT_ROOT", tmp_path)
+
+    app = SimpleNamespace(
+        server=SimpleNamespace(import_name="release_test_app"),
+        layout=None,
+        callback_map={},
+    )
+    direct_imports, local_roots = plugin._application_direct_imports(app)
+
+    assert "external" in direct_imports
+    assert "transitive" not in direct_imports
+    assert "release_test_app" in local_roots
+    assert "external" not in local_roots
 
 
 def test_built_assets_exist_and_are_registered():

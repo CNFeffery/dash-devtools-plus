@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 import sys
 from collections import Counter
+from functools import lru_cache
 from importlib import metadata
 from pathlib import Path
 from threading import Lock
@@ -61,9 +62,7 @@ def _runtime_contributions() -> tuple[list[dict[str, Any]], str]:
 
     finals = getattr(hooks, "_finals", {})
     final_ids = (
-        {id(item) for item in finals.values()}
-        if isinstance(finals, dict)
-        else set()
+        {id(item) for item in finals.values()} if isinstance(finals, dict) else set()
     )
     contributions: list[dict[str, Any]] = []
 
@@ -118,7 +117,9 @@ def _runtime_contributions() -> tuple[list[dict[str, Any]], str]:
                     "final": False,
                     "module": None,
                     "callable": None,
-                    "namespace": item.get("namespace") if isinstance(item, dict) else None,
+                    "namespace": item.get("namespace")
+                    if isinstance(item, dict)
+                    else None,
                     "ordered": False,
                 }
             )
@@ -165,9 +166,13 @@ def _snapshot_for(app: Any) -> frozenset[int] | None:
         return None
 
 
-def _entry_point_libraries() -> tuple[dict[str, dict[str, Any]], dict[str, str]]:
-    libraries: dict[str, dict[str, Any]] = {}
-    module_owners: dict[str, str] = {}
+@lru_cache(maxsize=1)
+def _hook_entry_point_specs(
+    _provider_identity: int,
+) -> tuple[tuple[str, str, str, str, str, str], ...]:
+    """Cache installed Dash Hook entry points for the process lifetime."""
+
+    specs: list[tuple[str, str, str, str, str, str]] = []
     seen_entries: set[tuple[str, str, str, str]] = set()
 
     for distribution in metadata.distributions():
@@ -189,27 +194,62 @@ def _entry_point_libraries() -> tuple[dict[str, dict[str, Any]], dict[str, str]]
             if dedupe_key in seen_entries:
                 continue
             seen_entries.add(dedupe_key)
+            specs.append(
+                (
+                    library_id,
+                    distribution_name,
+                    str(version),
+                    entry_point.name,
+                    entry_point.value,
+                    module,
+                )
+            )
 
-            library = libraries.setdefault(
-                library_id,
-                {
-                    "id": library_id,
-                    "name": distribution_name,
-                    "version": str(version),
-                    "source": "entry-point",
-                    "entryPoints": [],
-                    "modules": [],
-                    "loaded": False,
-                    "contributions": [],
-                },
-            )
-            library["entryPoints"].append(
-                {"name": entry_point.name, "value": entry_point.value, "module": module}
-            )
-            if module not in library["modules"]:
-                library["modules"].append(module)
-            library["loaded"] = library["loaded"] or module in sys.modules
-            module_owners[module] = library_id
+    return tuple(specs)
+
+
+def _entry_point_libraries() -> tuple[dict[str, dict[str, Any]], dict[str, str]]:
+    libraries: dict[str, dict[str, Any]] = {}
+    module_owners: dict[str, str] = {}
+
+    for (
+        library_id,
+        distribution_name,
+        version,
+        entry_point_name,
+        entry_point_value,
+        module,
+    ) in _hook_entry_point_specs(id(metadata.distributions)):
+        loaded_module = sys.modules.get(module) or sys.modules.get(
+            module.partition(".")[0]
+        )
+        runtime_version = getattr(loaded_module, "__version__", None)
+        resolved_version = runtime_version or version
+
+        library = libraries.setdefault(
+            library_id,
+            {
+                "id": library_id,
+                "name": distribution_name,
+                "version": str(resolved_version),
+                "source": "entry-point",
+                "entryPoints": [],
+                "modules": [],
+                "loaded": False,
+                "contributions": [],
+            },
+        )
+        library["entryPoints"].append(
+            {
+                "name": entry_point_name,
+                "value": entry_point_value,
+                "module": module,
+            }
+        )
+        if module not in library["modules"]:
+            library["modules"].append(module)
+        library["loaded"] = library["loaded"] or module in sys.modules
+        module_owners[module] = library_id
 
     return libraries, module_owners
 
@@ -302,7 +342,9 @@ def build_hook_inventory(app: Any) -> dict[str, Any]:
     for library in libraries.values():
         library_contributions = library.pop("contributions")
         type_counts = Counter(item["type"] for item in library_contributions)
-        snapshot_count = sum(item["phase"] == "snapshot" for item in library_contributions)
+        snapshot_count = sum(
+            item["phase"] == "snapshot" for item in library_contributions
+        )
         library_late_count = len(library_contributions) - snapshot_count
         late_count += library_late_count
         all_type_counts.update(type_counts)

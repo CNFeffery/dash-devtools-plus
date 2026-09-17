@@ -506,7 +506,7 @@ function CallbackDetailModal({row, open, onClose, onAfterClose, t}) {
   );
 }
 
-export default function CallbackPanel({endpoint, isActive, t}) {
+export default function CallbackPanel({endpoint, isActive, t, accentColor = "#119DFF"}) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -515,6 +515,10 @@ export default function CallbackPanel({endpoint, isActive, t}) {
   const [visibility, setVisibility] = useState("all");
   const [selectedCallback, setSelectedCallback] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const selectStyles = useMemo(
+    () => ({popup: {root: {"--ddp-primary": accentColor}}}),
+    [accentColor],
+  );
 
   const load = async () => {
     setLoading(true);
@@ -665,6 +669,7 @@ export default function CallbackPanel({endpoint, isActive, t}) {
         />
         <Select
           classNames={SELECT_CLASS_NAMES}
+          styles={selectStyles}
           variant="borderless"
           aria-label={t("allModes")}
           value={mode}
@@ -677,6 +682,7 @@ export default function CallbackPanel({endpoint, isActive, t}) {
         />
         <Select
           classNames={SELECT_CLASS_NAMES}
+          styles={selectStyles}
           variant="borderless"
           aria-label={t("allVisibility")}
           value={visibility}

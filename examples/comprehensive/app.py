@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -27,10 +28,13 @@ import dash_mantine_components as dmc  # noqa: F401 - loaded for library discove
 
 try:
     from . import demo_hooks as _demo_hooks  # noqa: F401
-except ImportError:  # Support ``python examples/app.py`` during local development.
+except ImportError:  # Support direct script execution during local development.
+    example_dir = str(Path(__file__).resolve().parent)
+    if example_dir not in sys.path:
+        sys.path.insert(0, example_dir)
     import demo_hooks as _demo_hooks  # type: ignore[no-redef]  # noqa: F401
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 configure_devtools_plus(
     default_locale="en",
@@ -605,9 +609,7 @@ def secondary_duplicate_writer(n_clicks: int) -> dict[str, Any]:
     },
     prevent_initial_call=True,
 )
-def grouped_signature(
-    controls: dict[str, Any], seed: Any
-) -> dict[str, dict[str, Any]]:
+def grouped_signature(controls: dict[str, Any], seed: Any) -> dict[str, dict[str, Any]]:
     """Exercise flexible dict/tuple dependency grouping."""
 
     return {
@@ -941,8 +943,16 @@ def build_layout() -> html.Main:
                             columns=[
                                 {"name": "Service", "id": "service"},
                                 {"name": "Status", "id": "status"},
-                                {"name": "Latency (ms)", "id": "latency", "type": "numeric"},
-                                {"name": "Requests", "id": "requests", "type": "numeric"},
+                                {
+                                    "name": "Latency (ms)",
+                                    "id": "latency",
+                                    "type": "numeric",
+                                },
+                                {
+                                    "name": "Requests",
+                                    "id": "requests",
+                                    "type": "numeric",
+                                },
                                 {"name": "Region", "id": "region"},
                             ],
                             data=INSPECTION_ROWS,
@@ -970,12 +980,18 @@ def build_layout() -> html.Main:
                             },
                             style_data_conditional=[
                                 {
-                                    "if": {"filter_query": '{status} = "healthy"', "column_id": "status"},
+                                    "if": {
+                                        "filter_query": '{status} = "healthy"',
+                                        "column_id": "status",
+                                    },
                                     "color": "#178067",
                                     "fontWeight": 650,
                                 },
                                 {
-                                    "if": {"filter_query": '{status} = "watch"', "column_id": "status"},
+                                    "if": {
+                                        "filter_query": '{status} = "watch"',
+                                        "column_id": "status",
+                                    },
                                     "color": "#b07120",
                                     "fontWeight": 650,
                                 },

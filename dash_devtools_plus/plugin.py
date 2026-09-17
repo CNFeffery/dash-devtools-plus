@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import ast
 import inspect
 import re
 import shutil
 import sys
+import sysconfig
+from collections import Counter
 from functools import lru_cache, wraps
+from importlib import metadata
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from threading import Lock
 from typing import Any, Optional, Union
@@ -32,6 +36,7 @@ _CONFIG: dict[str, Any] = {
     "accentColor": "#119DFF",
 }
 _CALLBACKS_ROUTE = "_dash-devtools-plus/callbacks"
+_DEPENDENCIES_ROUTE = "_dash-devtools-plus/dependencies"
 _COMPONENT_LIBRARIES_ROUTE = "_dash-devtools-plus/component-libraries"
 _HOOK_LIBRARIES_ROUTE = "_dash-devtools-plus/hook-libraries"
 _SERVER_METRICS_ROUTE = "_dash-devtools-plus/server-metrics"
@@ -114,6 +119,7 @@ def _component_props_for(app: Any | None) -> dict[str, Any]:
         **_CONFIG,
         "enabled": bool(app is not None and _devtools_enabled(app)),
         "callbacksEndpoint": _CALLBACKS_ROUTE,
+        "dependenciesEndpoint": _DEPENDENCIES_ROUTE,
         "componentLibrariesEndpoint": _COMPONENT_LIBRARIES_ROUTE,
         "hookLibrariesEndpoint": _HOOK_LIBRARIES_ROUTE,
         "serverMetricsEndpoint": _SERVER_METRICS_ROUTE,
@@ -210,12 +216,46 @@ def _harden_response(response: Any) -> Any:
     return response
 
 
+def _make_text_response(app: Any, body: str, status: int) -> Any:
+    """Create a text response across Dash 3's Flask and Dash 4 backends."""
+
+    backend = getattr(app, "backend", None)
+    make_response = getattr(backend, "make_response", None)
+    if callable(make_response):
+        return make_response(body, status=status)
+
+    server = getattr(app, "server", None)
+    make_response = getattr(server, "make_response", None)
+    if not callable(make_response):
+        raise RuntimeError("Dash application does not expose a response factory")
+    return make_response((body, status))
+
+
+def _make_json_response(app: Any, payload: Any) -> Any:
+    """Create a JSON response across Dash 3's Flask and Dash 4 backends."""
+
+    backend = getattr(app, "backend", None)
+    jsonify = getattr(backend, "jsonify", None)
+    if callable(jsonify):
+        return jsonify(payload)
+
+    server = getattr(app, "server", None)
+    json_response = getattr(getattr(server, "json", None), "response", None)
+    if callable(json_response):
+        return json_response(payload)
+
+    # Flask versions supported by Dash 3 predate the app.json provider.
+    from flask import jsonify as flask_jsonify  # pylint: disable=import-outside-toplevel
+
+    return flask_jsonify(payload)
+
+
 def _debug_only_response(app: Any, payload_factory: Any) -> Any:
     """Serve a payload only inside an explicitly debug-enabled Dash app."""
 
     if not _devtools_enabled(app):
-        return _harden_response(app.backend.make_response("Not Found", status=404))
-    return _harden_response(app.backend.jsonify(payload_factory()))
+        return _harden_response(_make_text_response(app, "Not Found", 404))
+    return _harden_response(_make_json_response(app, payload_factory()))
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:
@@ -224,6 +264,15 @@ def _is_relative_to(path: Path, parent: Path) -> bool:
     except ValueError:
         return False
     return True
+
+
+def _is_project_source(source_file: Path, project_root: Path) -> bool:
+    """Return whether a source belongs to the project rather than its env."""
+
+    if not _is_relative_to(source_file, project_root):
+        return False
+    source_parts = {part.casefold() for part in source_file.parts}
+    return source_parts.isdisjoint({"site-packages", "dist-packages"})
 
 
 def _source_root(source_file: Path) -> Optional[Path]:
@@ -246,7 +295,9 @@ def _editor_uri(
 ) -> Optional[str]:
     """Build an IDE URI for a verified file contained by the project root."""
 
-    if editor not in _SUPPORTED_EDITORS or not _is_relative_to(source_file, source_root):
+    if editor not in _SUPPORTED_EDITORS or not _is_relative_to(
+        source_file, source_root
+    ):
         return None
 
     relative_path = source_file.relative_to(source_root)
@@ -323,7 +374,10 @@ def _editor_targets(
     if _EDITOR is None:
         return []
 
-    editor_order = (_EDITOR, *(_editor for _editor in _EDITOR_ORDER if _editor != _EDITOR))
+    editor_order = (
+        _EDITOR,
+        *(_editor for _editor in _EDITOR_ORDER if _editor != _EDITOR),
+    )
     targets = []
     for editor in editor_order:
         uri = _editor_uri(editor, source_file, source_root, line)
@@ -527,12 +581,18 @@ def _component_library_metadata() -> list[dict[str, Any]]:
                 (
                     id(module),
                     {
-                    "module": module_name,
-                    "name": str(display_name),
-                    "version": str(version) if version is not None else None,
-                    "exports": len(exports) if hasattr(exports, "__len__") else None,
-                    "jsAssets": len(js_dist) if hasattr(js_dist, "__len__") else None,
-                    "scope": "core" if module_name.startswith("dash.") else "third-party",
+                        "module": module_name,
+                        "name": str(display_name),
+                        "version": str(version) if version is not None else None,
+                        "exports": len(exports)
+                        if hasattr(exports, "__len__")
+                        else None,
+                        "jsAssets": len(js_dist)
+                        if hasattr(js_dist, "__len__")
+                        else None,
+                        "scope": "core"
+                        if module_name.startswith("dash.")
+                        else "third-party",
                     },
                 )
             )
@@ -540,13 +600,13 @@ def _component_library_metadata() -> list[dict[str, Any]]:
             continue
 
     aliases: dict[int, set[str]] = {module_id: set() for module_id, _ in libraries}
-    project_root = Path.cwd().resolve()
+    project_root = _PROJECT_ROOT or Path.cwd().resolve()
     for owner_module in tuple(sys.modules.values()):
         source_file = getattr(owner_module, "__file__", None)
         if not source_file:
             continue
         try:
-            if not _is_relative_to(Path(source_file).resolve(), project_root):
+            if not _is_project_source(Path(source_file).resolve(), project_root):
                 continue
             namespace = tuple(vars(owner_module).items())
         except (OSError, RuntimeError, TypeError, ValueError):
@@ -582,6 +642,373 @@ def _serve_hook_library_metadata():
     return _debug_only_response(app, lambda: build_hook_inventory(app))
 
 
+@lru_cache(maxsize=1)
+def _module_distribution_map() -> dict[str, tuple[str, ...]]:
+    """Return a stable top-level-module to distribution mapping."""
+
+    return {
+        module: tuple(sorted(distributions, key=str.casefold))
+        for module, distributions in metadata.packages_distributions().items()
+    }
+
+
+def _module_source(module: Any) -> Path | None:
+    source = getattr(module, "__file__", None)
+    if not source:
+        return None
+    try:
+        return Path(source).absolute()
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return None
+
+
+def _is_standard_library(
+    module_name: str,
+    module: Any,
+    distributions: tuple[str, ...],
+) -> bool:
+    """Classify stdlib imports on every supported Python version."""
+
+    standard_names = getattr(sys, "stdlib_module_names", ())
+    if module_name in standard_names or module_name in sys.builtin_module_names:
+        return True
+
+    spec = getattr(module, "__spec__", None)
+    if getattr(spec, "origin", None) in {"built-in", "frozen"}:
+        return True
+    if distributions:
+        return False
+
+    source = _module_source(module)
+    if source is None:
+        return False
+    try:
+        standard_root = Path(sysconfig.get_path("stdlib")).resolve()
+        if not _is_relative_to(source, standard_root):
+            return False
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return False
+    return "site-packages" not in source.parts and "dist-packages" not in source.parts
+
+
+@lru_cache(maxsize=None)
+def _distribution_version(distribution_name: str) -> str | None:
+    try:
+        return str(metadata.version(distribution_name))
+    except (metadata.PackageNotFoundError, ValueError):
+        return None
+
+
+def _relative_import_base(module: Any, imported: ast.ImportFrom) -> str:
+    """Resolve the absolute base of one ``from`` import without importing it."""
+
+    if not imported.level:
+        return imported.module or ""
+
+    package = getattr(module, "__package__", None)
+    if not package:
+        return ""
+    package_parts = package.split(".")
+    keep = len(package_parts) - imported.level + 1
+    if keep < 0:
+        return ""
+    base_parts = package_parts[:keep]
+    if imported.module:
+        base_parts.extend(imported.module.split("."))
+    return ".".join(base_parts)
+
+
+def _source_imports(module: Any) -> set[str]:
+    """Return modules explicitly imported by one loaded Python source file."""
+
+    source = _module_source(module)
+    if source is None or source.suffix.casefold() != ".py":
+        return set()
+    try:
+        tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+    except (OSError, SyntaxError, UnicodeError):
+        return set()
+
+    imported_modules: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name in sys.modules:
+                    imported_modules.add(alias.name)
+                    continue
+                root_name = alias.name.partition(".")[0]
+                if root_name in sys.modules:
+                    imported_modules.add(root_name)
+        elif isinstance(node, ast.ImportFrom):
+            base = _relative_import_base(module, node)
+            if not base:
+                continue
+            if base in sys.modules:
+                imported_modules.add(base)
+            for alias in node.names:
+                if alias.name == "*":
+                    continue
+                candidate = f"{base}.{alias.name}"
+                if candidate in sys.modules:
+                    imported_modules.add(candidate)
+
+    return imported_modules
+
+
+def _application_direct_imports(app: Any) -> tuple[set[str], set[str]]:
+    """Find imports made directly by the running application's source tree."""
+
+    seed_names: set[str] = set()
+    server_name = getattr(getattr(app, "server", None), "import_name", None)
+    if server_name:
+        seed_names.add(server_name)
+
+    layout_module = getattr(getattr(app, "layout", None), "__module__", None)
+    if layout_module:
+        seed_names.add(layout_module)
+    for callback in getattr(app, "callback_map", {}).values():
+        callback_module = getattr(callback.get("callback"), "__module__", None)
+        if callback_module:
+            seed_names.add(callback_module)
+
+    seed_modules = [sys.modules[name] for name in seed_names if name in sys.modules]
+    seed_sources = [
+        source for module in seed_modules if (source := _module_source(module))
+    ]
+    if _PROJECT_ROOT is not None:
+        project_root = _PROJECT_ROOT
+    elif seed_sources:
+        project_root = _source_root(seed_sources[0]) or Path.cwd().resolve()
+    else:
+        project_root = Path.cwd().resolve()
+
+    plugin_root = Path(__file__).resolve().parent
+    queue: list[Any] = []
+    seen_sources: set[Path] = set()
+    local_roots: set[str] = set()
+    direct_imports: set[str] = set()
+
+    for module in seed_modules:
+        source = _module_source(module)
+        if source is None or not _is_project_source(source, project_root):
+            continue
+        queue.append(module)
+        module_name = getattr(module, "__name__", "")
+        if module_name:
+            local_roots.add(module_name.partition(".")[0])
+
+    while queue:
+        module = queue.pop()
+        source = _module_source(module)
+        if source is None or source in seen_sources:
+            continue
+        seen_sources.add(source)
+
+        for imported_name in _source_imports(module):
+            direct_imports.add(imported_name)
+            imported_module = sys.modules.get(imported_name)
+            imported_source = _module_source(imported_module)
+            if imported_source is None or not _is_project_source(
+                imported_source, project_root
+            ):
+                continue
+            local_roots.add(imported_name.partition(".")[0])
+            if not _is_relative_to(imported_source, plugin_root):
+                queue.append(imported_module)
+
+    return direct_imports, local_roots
+
+
+def _matches_direct_import(module_name: str, direct_imports: set[str]) -> bool:
+    return any(
+        module_name == imported
+        or module_name.startswith(f"{imported}.")
+        or imported.startswith(f"{module_name}.")
+        for imported in direct_imports
+    )
+
+
+def _loaded_dependency_metadata(app: Any) -> dict[str, Any]:
+    """Build an inventory of libraries directly imported by application code."""
+
+    component_libraries = _component_library_metadata()
+    hook_inventory = build_hook_inventory(app)
+    distribution_map = _module_distribution_map()
+    direct_imports, local_roots = _application_direct_imports(app)
+    direct_roots = {name.partition(".")[0] for name in direct_imports}
+    module_counts: Counter[str] = Counter()
+    root_modules: dict[str, Any] = {}
+
+    for loaded_name, loaded_module in tuple(sys.modules.items()):
+        if loaded_module is None or not loaded_name:
+            continue
+        root_name = loaded_name.partition(".")[0]
+        if (
+            not root_name.isidentifier()
+            or root_name.startswith("_")
+            or root_name in {"builtins", "__main__"}
+        ):
+            continue
+        module_counts[root_name] += 1
+        root_modules.setdefault(root_name, sys.modules.get(root_name) or loaded_module)
+
+    records: list[dict[str, Any]] = []
+    claimed_roots: set[str] = set()
+
+    if "dash" in direct_imports:
+        dash_module = root_modules.get("dash")
+        dash_version = getattr(dash_module, "__version__", None)
+        records.append(
+            {
+                "id": "component:dash",
+                "name": "dash",
+                "version": (
+                    str(dash_version)
+                    if dash_version is not None
+                    else _distribution_version("dash")
+                ),
+                "category": "dash-component",
+                "modules": ["dash"],
+                "moduleCount": module_counts.get("dash", 0),
+                "component": None,
+                "hook": None,
+            }
+        )
+        claimed_roots.add("dash")
+
+    for component in component_libraries:
+        root_name = component["module"].partition(".")[0]
+        is_direct_component = component["module"] in direct_imports or (
+            not component["module"].startswith("dash.") and root_name in direct_roots
+        )
+        if not is_direct_component:
+            continue
+        claimed_roots.add(root_name)
+        records.append(
+            {
+                "id": f"component:{component['module']}",
+                "name": component["name"],
+                "version": component["version"],
+                "category": "dash-component",
+                "modules": [component["module"]],
+                "moduleCount": module_counts.get(root_name, 0),
+                "component": component,
+                "hook": None,
+            }
+        )
+
+    for hook_library in hook_inventory["libraries"]:
+        # An installed entry point that was never loaded is not a dependency of
+        # the running app. The legacy endpoint still exposes those discoveries.
+        if hook_library["status"] == "discovered":
+            continue
+        hook_roots = {
+            module.partition(".")[0] for module in hook_library["modules"] if module
+        }
+        if not any(
+            _matches_direct_import(module, direct_imports)
+            for module in hook_library["modules"]
+        ):
+            continue
+        claimed_roots.update(hook_roots)
+        records.append(
+            {
+                "id": f"hook:{hook_library['id']}",
+                "name": hook_library["name"],
+                "version": hook_library["version"],
+                "category": "dash-hook",
+                "modules": hook_library["modules"],
+                "moduleCount": sum(module_counts.get(name, 0) for name in hook_roots),
+                "component": None,
+                "hook": hook_library,
+            }
+        )
+
+    other_distributions: dict[str, dict[str, Any]] = {}
+    standard_records: list[dict[str, Any]] = []
+    for root_name in sorted(direct_roots, key=str.casefold):
+        module = root_modules.get(root_name)
+        if module is None or root_name in claimed_roots or root_name in local_roots:
+            continue
+        distributions = distribution_map.get(root_name, ())
+        if _is_standard_library(root_name, module, distributions):
+            standard_records.append(
+                {
+                    "id": f"standard:{root_name}",
+                    "name": root_name,
+                    "version": None,
+                    "category": "standard",
+                    "modules": [root_name],
+                    "moduleCount": module_counts[root_name],
+                    "component": None,
+                    "hook": None,
+                }
+            )
+            continue
+
+        distribution_name = distributions[0] if distributions else root_name
+        distribution_id = re.sub(r"[-_.]+", "-", distribution_name).casefold()
+        record = other_distributions.setdefault(
+            distribution_id,
+            {
+                "id": f"other:{distribution_id}",
+                "name": distribution_name,
+                "version": _distribution_version(distribution_name),
+                "category": "other",
+                "modules": [],
+                "moduleCount": 0,
+                "component": None,
+                "hook": None,
+            },
+        )
+        if root_name not in record["modules"]:
+            record["modules"].append(root_name)
+        record["moduleCount"] += module_counts[root_name]
+
+    records.extend(standard_records)
+    records.extend(other_distributions.values())
+    category_order = {
+        "standard": 0,
+        "dash-component": 1,
+        "dash-hook": 2,
+        "other": 3,
+    }
+    for record in records:
+        record["modules"] = sorted(record["modules"], key=str.casefold)
+    records.sort(
+        key=lambda item: (
+            category_order[item["category"]],
+            item["name"].casefold(),
+            item["id"],
+        )
+    )
+    category_counts = Counter(record["category"] for record in records)
+
+    return {
+        "schemaVersion": 1,
+        "libraries": records,
+        "summary": {
+            "total": len(records),
+            "standard": category_counts["standard"],
+            "dashComponents": category_counts["dash-component"],
+            "dashHooks": category_counts["dash-hook"],
+            "other": category_counts["other"],
+        },
+        "hookMeta": {
+            "dashVersion": hook_inventory["dashVersion"],
+            "completeness": hook_inventory["completeness"],
+            "summary": hook_inventory["summary"],
+            "orderWarnings": hook_inventory["orderWarnings"],
+            "unassigned": hook_inventory["unassigned"],
+        },
+    }
+
+
+def _serve_dependency_metadata():
+    app = get_app()
+    return _debug_only_response(app, lambda: _loaded_dependency_metadata(app))
+
+
 def _serve_server_metrics():
     app = get_app()
     return _debug_only_response(app, collect_server_metrics)
@@ -615,9 +1042,8 @@ def register() -> None:
         )
 
         hooks.route(name=_CALLBACKS_ROUTE)(_serve_callback_metadata)
-        hooks.route(name=_COMPONENT_LIBRARIES_ROUTE)(
-            _serve_component_library_metadata
-        )
+        hooks.route(name=_DEPENDENCIES_ROUTE)(_serve_dependency_metadata)
+        hooks.route(name=_COMPONENT_LIBRARIES_ROUTE)(_serve_component_library_metadata)
         hooks.route(name=_HOOK_LIBRARIES_ROUTE)(_serve_hook_library_metadata)
         hooks.route(name=_SERVER_METRICS_ROUTE)(_serve_server_metrics)
         hooks.setup(priority=sys.maxsize)(_setup_app)

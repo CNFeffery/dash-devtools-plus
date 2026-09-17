@@ -2,23 +2,21 @@ import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {Button, ConfigProvider, Drawer, Segmented, Tabs, Tooltip} from "antd";
 import {
   ApartmentOutlined,
-  AppstoreOutlined,
   BgColorsOutlined,
-  BranchesOutlined,
   CameraOutlined,
   CloseOutlined,
   DashboardOutlined,
   GlobalOutlined,
+  ProductOutlined,
   ScanOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import CallbackPanel from "./CallbackPanel";
 import ComponentInspectorPanel from "./ComponentInspectorPanel";
-import ComponentLibrariesPanel from "./ComponentLibrariesPanel";
 import ComponentProbeOverlay from "./ComponentProbeOverlay";
+import DependenciesPanel from "./DependenciesPanel";
 import DevtoolsAppearancePanel from "./DevtoolsAppearancePanel";
 import {createNestedInspection} from "./componentInspector";
-import HookLibrariesPanel from "./HookLibrariesPanel";
 import ServerMetricsPanel, {useServerMetrics} from "./ServerMetricsPanel";
 import StateSnapshotsPanel from "./StateSnapshotsPanel";
 import {createTranslator, normalizeLocale} from "./i18n";
@@ -31,6 +29,7 @@ import {
   readNativeDevtoolsTheme,
   writeNativeDevtoolsTheme,
 } from "./nativeDevtoolsTheme";
+import brandLogoUrl from "../../imgs/devtools-plus-logo.svg";
 
 const POPUP_ID = "dash-devtools-plus";
 const {useDevtool, useDevtoolMenuButtonClassName} = window.dash_component_api.devtool;
@@ -58,7 +57,7 @@ function initialNativeDevtoolsTheme() {
 function BrandMark() {
   return (
     <span className="ddp-brand-mark" aria-hidden="true">
-      <SearchOutlined />
+      <img className="ddp-brand-logo" src={brandLogoUrl} alt="" />
     </span>
   );
 }
@@ -67,8 +66,7 @@ function EnabledDevtoolsPlus({
   defaultLocale = "en",
   accentColor = "#119DFF",
   callbacksEndpoint = "_dash-devtools-plus/callbacks",
-  componentLibrariesEndpoint = "_dash-devtools-plus/component-libraries",
-  hookLibrariesEndpoint = "_dash-devtools-plus/hook-libraries",
+  dependenciesEndpoint = "_dash-devtools-plus/dependencies",
   serverMetricsEndpoint = "_dash-devtools-plus/server-metrics",
 }) {
   const {popup, setPopup} = useDevtool();
@@ -208,7 +206,7 @@ function EnabledDevtoolsPlus({
             className={`ddp-main-tabs ${["appearance", "callbacks"].includes(activeTab) ? "has-pane-scroll" : ""}`}
             activeKey={activeTab}
             onChange={setActiveTab}
-            animated={{inkBar: true, tabPane: true}}
+            animated={false}
             destroyOnHidden={false}
             items={[
               {
@@ -228,6 +226,7 @@ function EnabledDevtoolsPlus({
                   <CallbackPanel
                     endpoint={callbacksEndpoint}
                     isActive={isOpen && activeTab === "callbacks"}
+                    accentColor={accentColor}
                     t={t}
                   />
                 ),
@@ -252,23 +251,13 @@ function EnabledDevtoolsPlus({
                 children: <StateSnapshotsPanel locale={locale} t={t} />,
               },
               {
-                key: "libraries",
-                label: <span className="ddp-tab-label"><AppstoreOutlined />{t("componentLibrariesNav")}</span>,
+                key: "dependencies",
+                label: <span className="ddp-tab-label"><ProductOutlined />{t("dependenciesNav")}</span>,
                 children: (
-                  <ComponentLibrariesPanel
-                    endpoint={componentLibrariesEndpoint}
-                    isActive={isOpen && activeTab === "libraries"}
-                    t={t}
-                  />
-                ),
-              },
-              {
-                key: "hooks",
-                label: <span className="ddp-tab-label"><BranchesOutlined />{t("hookLibrariesNav")}</span>,
-                children: (
-                  <HookLibrariesPanel
-                    endpoint={hookLibrariesEndpoint}
-                    isActive={isOpen && activeTab === "hooks"}
+                  <DependenciesPanel
+                    endpoint={dependenciesEndpoint}
+                    isActive={isOpen && activeTab === "dependencies"}
+                    accentColor={accentColor}
                     t={t}
                   />
                 ),

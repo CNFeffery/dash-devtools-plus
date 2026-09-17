@@ -49,7 +49,7 @@ function HookDetails({library, t}) {
     {
       title: t("hookColumnPriority"), dataIndex: "priority", width: 90,
       render: (value, row) => {
-        if (row.final) return <Tag color="gold">FINAL</Tag>;
+        if (row.final) return <Tag color="gold">{t("hookPriorityFinal")}</Tag>;
         if (row.callable === "capture_app_hook_snapshot") {
           return <Tag bordered={false}>{t("hookPriorityFirst")}</Tag>;
         }

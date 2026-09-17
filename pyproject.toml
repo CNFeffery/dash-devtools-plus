@@ -22,7 +22,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-  "dash>=3.3.0",
+  "dash>=3.4.0",
   "psutil>=5.9",
 ]
 
@@ -37,14 +37,14 @@ dev = [
 dash-devtools-plus = "dash_devtools_plus"
 
 [project.urls]
-Repository = "https://github.com/HogaStack/dash-devtools-plus"
-Issues = "https://github.com/HogaStack/dash-devtools-plus/issues"
+Repository = "https://github.com/CNFeffery/dash-devtools-plus"
+Issues = "https://github.com/CNFeffery/dash-devtools-plus/issues"
 
 [tool.setuptools.packages.find]
 include = ["dash_devtools_plus*"]
 
 [tool.setuptools.package-data]
-dash_devtools_plus = ["assets/*.js", "assets/*.css"]
+dash_devtools_plus = ["assets/*.js", "assets/*.css", "assets/*.svg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

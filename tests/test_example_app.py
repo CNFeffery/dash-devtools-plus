@@ -5,17 +5,56 @@ from urllib.parse import unquote
 import pytest
 
 from dash_devtools_plus import plugin
-from examples.app import app, publish_seed, trigger_debug_error
+from examples.comprehensive.app import app, publish_seed, trigger_debug_error
+from examples.intermediate.app import app as intermediate_app, plan_trip
+from examples.simple.app import app as simple_app, create_greeting
 
 
-def enable_dev_tools_once():
-    if not plugin._devtools_enabled(app):
-        app.enable_dev_tools(
+def enable_dev_tools_once(target_app=app):
+    if not plugin._devtools_enabled(target_app):
+        target_app.enable_dev_tools(
             debug=True,
             dev_tools_ui=True,
             dev_tools_disable_version_check=True,
             dev_tools_hot_reload=False,
         )
+
+
+def test_simple_example_has_exactly_one_server_and_one_clientside_callback():
+    dependencies = simple_app._callback_list
+
+    assert len(dependencies) == 2
+    assert sum(bool(item.get("clientside_function")) for item in dependencies) == 1
+    assert sum(not item.get("clientside_function") for item in dependencies) == 1
+    assert create_greeting(" Dash ") == "你好，Dash。这条消息来自 Python。"
+
+
+def test_intermediate_example_is_one_cohesive_core_component_scenario():
+    assert len(intermediate_app._callback_list) == 1
+    callback = intermediate_app._callback_list[0]
+
+    assert len(callback["inputs"]) == 5
+    assert callback["output"].startswith("..total-cost.children")
+    assert "budget-chart.figure" in callback["output"]
+    assert "inspection-table" not in str(intermediate_app.layout)
+
+    total, per_person, gap, summary, figure, advice = plan_trip(
+        "hangzhou", 3, 2, ["museum", "food"], 8000
+    )
+    assert (total, per_person, gap) == ("¥5,540", "¥2,770", "¥2,460")
+    assert "杭州" in summary
+    assert len(figure.data) == 1
+    assert "预算充足" in advice
+
+
+@pytest.mark.parametrize("example_app", [simple_app, intermediate_app, app])
+def test_each_example_serves_its_page_layout_and_callback_manifest(example_app):
+    enable_dev_tools_once(example_app)
+    client = example_app.server.test_client()
+
+    assert client.get("/").status_code == 200
+    assert client.get("/_dash-layout").status_code == 200
+    assert client.get("/_dash-dependencies").status_code == 200
 
 
 def test_callback_laboratory_has_broad_callback_coverage():
@@ -40,10 +79,13 @@ def test_callback_laboratory_has_broad_callback_coverage():
         item.get("no_output") and '"MATCH"' in str(item.get("inputs"))
         for item in dependencies
     )
-    assert sum(
-        item["output"].split("@")[0] == "duplicate-result.data"
-        for item in dependencies
-    ) == 2
+    assert (
+        sum(
+            item["output"].split("@")[0] == "duplicate-result.data"
+            for item in dependencies
+        )
+        == 2
+    )
     assert any(item.get("optional") for item in dependencies)
     assert any(item.get("background") for item in dependencies)
     assert any(item.get("websocket") for item in dependencies)
@@ -98,19 +140,19 @@ def test_callback_metadata_includes_relative_python_source_locations():
     ]
     assert len(server_callbacks) >= 110
     assert all(item["source"].get("docstring") for item in server_callbacks)
-    assert sum(
-        "\n\n" in item["source"]["docstring"] for item in server_callbacks
-    ) >= 100
+    assert (
+        sum("\n\n" in item["source"]["docstring"] for item in server_callbacks) >= 100
+    )
     source = by_output["seed-store.data"]["source"]
     assert {key: source[key] for key in ("kind", "function", "path", "line")} == {
         "kind": "python",
         "function": "publish_seed",
-        "path": "examples/app.py",
+        "path": "examples/comprehensive/app.py",
         "line": inspect.getsourcelines(publish_seed)[1],
     }
     assert unquote(source["editorUri"]) == (
         f"vscode://file/{workspace.as_posix()}"
-        f"/examples/app.py:{inspect.getsourcelines(publish_seed)[1]}:1"
+        f"/examples/comprehensive/app.py:{inspect.getsourcelines(publish_seed)[1]}:1"
     )
     assert [target["id"] for target in source["editorUris"]] == [
         "vscode",
@@ -124,7 +166,9 @@ def test_callback_metadata_includes_relative_python_source_locations():
     clientside_line = next(
         line_number
         for line_number, text in enumerate(
-            (workspace / "examples" / "app.py").read_text(encoding="utf-8").splitlines(),
+            (workspace / "examples" / "comprehensive" / "app.py")
+            .read_text(encoding="utf-8")
+            .splitlines(),
             start=1,
         )
         if "app.clientside_callback(" in text
@@ -135,7 +179,7 @@ def test_callback_metadata_includes_relative_python_source_locations():
     } == {
         "kind": "clientside-registration",
         "function": "app.clientside_callback",
-        "path": "examples/app.py",
+        "path": "examples/comprehensive/app.py",
         "line": clientside_line,
         "docstring": None,
     }
@@ -157,9 +201,7 @@ def test_callback_metadata_includes_relative_python_source_locations():
 def test_component_library_metadata_uses_dash_module_signature():
     enable_dev_tools_once()
 
-    response = app.server.test_client().get(
-        "/_dash-devtools-plus/component-libraries"
-    )
+    response = app.server.test_client().get("/_dash-devtools-plus/component-libraries")
     libraries = response.get_json()
     by_module = {item["module"]: item for item in libraries}
 
@@ -194,9 +236,7 @@ def test_hook_library_inventory_reports_entry_points_and_runtime_order():
     }
 
     installed = [
-        item
-        for item in inventory["libraries"]
-        if item["id"] == "dash-devtools-plus"
+        item for item in inventory["libraries"] if item["id"] == "dash-devtools-plus"
     ]
     assert len(installed) == 1
     assert installed[0]["status"] == "registered"
@@ -207,8 +247,48 @@ def test_hook_library_inventory_reports_entry_points_and_runtime_order():
     demo = next(
         item
         for item in inventory["libraries"]
-        if item["source"] == "manual" and "examples.demo_hooks" in item["modules"]
+        if item["source"] == "manual"
+        and "examples.comprehensive.demo_hooks" in item["modules"]
     )
     assert demo["status"] == "registered"
     assert {item["type"] for item in demo["hookTypes"]} == {"layout", "setup"}
     assert "layout" in inventory["orderWarnings"]
+
+
+def test_dependency_inventory_unifies_imported_library_categories():
+    enable_dev_tools_once()
+
+    response = app.server.test_client().get("/_dash-devtools-plus/dependencies")
+    inventory = response.get_json()
+
+    assert response.status_code == 200
+    assert inventory["schemaVersion"] == 1
+    assert inventory["summary"]["total"] == len(inventory["libraries"])
+    assert {item["category"] for item in inventory["libraries"]} == {
+        "standard",
+        "dash-component",
+        "dash-hook",
+    }
+    assert inventory["summary"] == {
+        "total": 11,
+        "standard": 3,
+        "dashComponents": 6,
+        "dashHooks": 2,
+        "other": 0,
+    }
+
+    by_id = {item["id"]: item for item in inventory["libraries"]}
+    assert by_id["component:dash"]["modules"] == ["dash"]
+    assert by_id["component:dash"]["version"]
+    assert by_id["component:dash"]["component"] is None
+    assert by_id["component:dash.dcc"]["component"]["module"] == "dash.dcc"
+    assert by_id["component:feffery_antd_components"]["component"]["aliases"]
+
+    hooks = [item for item in inventory["libraries"] if item["category"] == "dash-hook"]
+    assert any(item["name"] == "dash-devtools-plus" for item in hooks)
+    assert all(item["hook"]["status"] != "discovered" for item in hooks)
+    assert not any(item["id"] == "hook:plotly-cloud" for item in hooks)
+    assert not any(
+        item["name"] in {"Flask", "Werkzeug"} for item in inventory["libraries"]
+    )
+    assert inventory["hookMeta"]["dashVersion"]

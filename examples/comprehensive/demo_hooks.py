@@ -1,4 +1,4 @@
-"""Small manual hook library used by the development example.
+"""Small manual hook library used by the comprehensive example.
 
 It intentionally provides two ordered layout hooks so the hook inventory panel
 has a realistic non-entry-point library and ordering relationship to inspect.

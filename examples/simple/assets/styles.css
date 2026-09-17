@@ -1,0 +1,59 @@
+:root {
+  --paper: #f4f1e9;
+  --ink: #17302b;
+  --muted: #66736f;
+  --line: #d7dbd2;
+  --signal: #ff6b35;
+  --green: #0c7b69;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(12, 123, 105, .08), transparent 30%),
+    var(--paper);
+  font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+.simple-shell {
+  width: min(900px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 76px 0 44px;
+}
+
+.hero { max-width: 720px; margin-bottom: 44px; }
+.eyebrow { margin: 0 0 14px; color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .18em; }
+.hero h1 { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: clamp(44px, 7vw, 68px); font-weight: 500; line-height: 1.02; letter-spacing: -.045em; }
+.lede { max-width: 650px; margin: 24px 0 0; color: var(--muted); font-size: 17px; line-height: 1.75; }
+
+.demo-card {
+  display: grid;
+  grid-template-columns: minmax(260px, .9fr) minmax(320px, 1.1fr);
+  gap: 34px;
+  align-items: center;
+  padding: 32px;
+  border-top: 1px solid var(--ink);
+}
+.client-card { border-bottom: 1px solid var(--ink); }
+.control-row { display: grid; grid-template-columns: 42px 1fr; gap: 18px; align-items: start; }
+.step-number { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--ink); border-radius: 50%; font-family: Georgia, serif; font-size: 13px; }
+.control-row label { display: block; margin: 7px 0 14px; font-weight: 700; }
+.control-row input { width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 4px; background: rgba(255,255,255,.72); color: var(--ink); font: inherit; }
+.slider-row > div:last-child { min-width: 0; }
+.result-card { padding: 28px; border-left: 4px solid var(--green); background: rgba(255,255,255,.68); font-family: Georgia, "Songti SC", serif; font-size: 22px; line-height: 1.55; }
+.signal-track { position: relative; height: 64px; overflow: hidden; border: 1px solid var(--ink); background: rgba(255,255,255,.45); }
+.signal-fill { position: absolute; inset: 0 auto 0 0; background: var(--signal); transition: width 160ms ease-out; }
+.signal-track strong { position: relative; z-index: 1; display: grid; height: 100%; place-items: center; color: var(--ink); mix-blend-mode: multiply; }
+footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 700px) {
+  .simple-shell { padding-top: 46px; }
+  .demo-card { grid-template-columns: 1fr; padding-inline: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-fill { transition: none; }
+}
