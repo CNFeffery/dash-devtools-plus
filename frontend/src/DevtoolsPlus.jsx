@@ -31,6 +31,7 @@ import {
   writeNativeDevtoolsTheme,
 } from "./nativeDevtoolsTheme";
 import brandLogoUrl from "../../imgs/devtools-plus-logo.svg";
+import {version as packageVersion} from "../../package.json";
 
 const POPUP_ID = "dash-devtools-plus";
 const {useDevtool, useDevtoolMenuButtonClassName} = window.dash_component_api.devtool;
@@ -171,6 +172,7 @@ function EnabledDevtoolsPlus({
               <div>
                 <div className="ddp-brand-title">
                   <strong>{t("title")}</strong>
+                  <span className="ddp-project-version">v{packageVersion}</span>
                 </div>
                 <span>{t("subtitle")}</span>
               </div>
