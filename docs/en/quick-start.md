@@ -14,17 +14,14 @@ Dash Devtools Plus is a Dash application development and debugging enhancement p
 pip install dash-devtools-plus -U
 ```
 
-The package exposes a `dash_hooks` entry point. Dash discovers it when the package is installed, so importing the package is enough to register the integration.
+The package exposes a `dash_hooks` entry point. Once installed, Dash automatically discovers and registers the integration. You do not need to import `dash_devtools_plus` or call `configure_devtools_plus()` for the default setup.
 
-## 🪄 Minimal application
+## 🪄 Minimal application (default setup)
 
-Call `configure_devtools_plus` before constructing `Dash` when you want to set options. The call is optional if the defaults work for your project.
+Create and run your Dash application normally:
 
 ```python
 from dash import Dash, html
-from dash_devtools_plus import configure_devtools_plus
-
-configure_devtools_plus(default_locale="en")
 
 app = Dash(__name__)
 app.layout = html.Div("Hello, Dash Devtools Plus")
@@ -34,6 +31,8 @@ if __name__ == "__main__":
 ```
 
 Open the application, then select **Devtools Plus** in Dash's native bottom-right toolbar.
+
+To override a default setting, call `configure_devtools_plus()` before constructing `Dash`; see [Configuration](configuration.md).
 
 ## FastAPI backend
 

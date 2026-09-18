@@ -33,11 +33,10 @@ Start a Dash application in debug mode, then select **Devtools Plus** from the n
 pip install dash-devtools-plus -U
 ```
 
+After installation, Dash automatically discovers and registers Devtools Plus through its `dash_hooks` entry point. No `dash_devtools_plus` import or `configure_devtools_plus()` call is needed when the default settings are sufficient.
+
 ```python
 from dash import Dash, html
-from dash_devtools_plus import configure_devtools_plus
-
-configure_devtools_plus(default_locale="en")
 
 app = Dash(__name__)
 app.layout = html.Div("Hello, Dash Devtools Plus")
@@ -46,7 +45,7 @@ if __name__ == "__main__":
     app.run(debug=True)
 ```
 
-The package is discovered through Dash Hooks after installation. When configuration is needed, call `configure_devtools_plus` before creating the `Dash` instance. The panel appears only when debug mode and Dash's native Dev Tools UI are both enabled.
+The panel appears only when debug mode and Dash's native Dev Tools UI are both enabled. To override the defaults, call `configure_devtools_plus()` before creating the `Dash` instance.
 
 For full installation notes, see [Quick start](./docs/en/quick-start.md).
 
@@ -61,7 +60,9 @@ For full installation notes, see [Quick start](./docs/en/quick-start.md).
 | Imported dependencies | Direct project imports grouped as standard library, Dash components, Dash Hooks, or other libraries. | [Open guide](./docs/en/features/dependencies.md) |
 | Toolbar skins | Preview and apply native Dash Dev Tools toolbar and error-display themes. | [Open guide](./docs/en/features/toolbar-skins.md) |
 
-## ⚙️ Configuration
+## ⚙️ Optional configuration
+
+Use `configure_devtools_plus()` only when you need to override the defaults, such as the language, accent color, editor, or project roots.
 
 ```python
 from pathlib import Path

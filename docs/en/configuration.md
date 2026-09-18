@@ -1,6 +1,8 @@
 # ⚙️ Configuration
 
-Configure Dash Devtools Plus before creating the `Dash` application instance:
+Configuration is optional. After the package is installed, Dash automatically discovers and registers Devtools Plus through its `dash_hooks` entry point; the default setup does not require importing this package or calling `configure_devtools_plus()`.
+
+Call `configure_devtools_plus()` before creating the `Dash` application instance only when you need to override a default:
 
 ```python
 from pathlib import Path

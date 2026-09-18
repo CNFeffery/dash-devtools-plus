@@ -1,6 +1,8 @@
 # ⚙️ 配置参数
 
-请在创建 `Dash` 应用实例前配置 Dash Devtools Plus：
+配置是可选的。安装本包后，Dash 会通过 `dash_hooks` 入口点自动发现并注册 Devtools Plus；使用默认设置时，无需导入本包，也无需调用 `configure_devtools_plus()`。
+
+仅当需要覆盖默认值时，才在创建 `Dash` 应用实例前调用 `configure_devtools_plus()`：
 
 ```python
 from pathlib import Path

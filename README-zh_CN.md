@@ -26,11 +26,10 @@
 pip install dash-devtools-plus -U
 ```
 
+安装后，Dash 会通过本包的 `dash_hooks` 入口点自动发现并完成注册。若默认配置已满足需求，无需导入 `dash_devtools_plus`，也无需调用 `configure_devtools_plus()`。
+
 ```python
 from dash import Dash, html
-from dash_devtools_plus import configure_devtools_plus
-
-configure_devtools_plus(default_locale="zh-CN")
 
 app = Dash(__name__)
 app.layout = html.Div("Hello, Dash Devtools Plus")
@@ -39,7 +38,7 @@ if __name__ == "__main__":
     app.run(debug=True)
 ```
 
-安装后，Dash 会通过 Dash Hooks 自动发现本包。需要自定义时，请在创建 `Dash` 实例前调用 `configure_devtools_plus`。仅当调试模式与 Dash 原生 Dev Tools UI 同时开启时，面板才会显示。
+仅当调试模式与 Dash 原生 Dev Tools UI 同时开启时，面板才会显示。如需覆盖默认配置，请在创建 `Dash` 实例前调用 `configure_devtools_plus()`。
 
 完整说明见[快速开始](./docs/zh-CN/quick-start.md)。
 
@@ -54,7 +53,9 @@ if __name__ == "__main__":
 | 依赖库 | 按标准库、Dash 组件库、Dash Hooks 库和其他库整理项目直接导入项。 | [查看说明](./docs/zh-CN/features/dependencies.md) |
 | 工具条换肤 | 预览并应用 Dash 原生 Dev Tools 工具栏与错误展示主题。 | [查看说明](./docs/zh-CN/features/toolbar-skins.md) |
 
-## ⚙️ 配置
+## ⚙️ 可选配置
+
+仅在需要覆盖默认语言、强调色、编辑器或项目根目录等设置时，才需要调用 `configure_devtools_plus()`。
 
 ```python
 from pathlib import Path
