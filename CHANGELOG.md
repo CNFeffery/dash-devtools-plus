@@ -2,7 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
-## [0.1.3] - Unreleased
+## [0.1.4] - Unreleased
+
+## [0.1.3] - 2026-09-18
 
 ### Added
 
@@ -10,7 +12,6 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
-- Kept runtime reports privacy-conscious by omitting hostnames, full user agents, project paths, standard-library modules, and project-local modules.
 - Tightened dependency ownership checks so project-local components and manually registered Hooks are not classified as third-party libraries.
 
 ### Fixed
