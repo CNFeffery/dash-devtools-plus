@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
 | 工作区 | 能做什么 | 功能文档 |
 | --- | --- | --- |
-| 服务器资源 | 实时查看 CPU、内存、磁盘与主机/运行环境信息。 | [查看说明](./docs/zh-CN/features/server-metrics.md) |
 | 回调关系 | 搜索回调图数据、源码位置、角色列表、Docstring 与执行元数据。 | [查看说明](./docs/zh-CN/features/callbacks.md) |
+| 服务器资源 | 实时查看 CPU、内存、磁盘与主机/运行环境信息。 | [查看说明](./docs/zh-CN/features/server-metrics.md) |
 | 组件探查 | 点击页面已渲染元素，定位其 Dash 组件、布局路径与当前 Props。 | [查看说明](./docs/zh-CN/features/component-inspector.md) |
 | 状态快照 | 保存选中组件的 Props，并在当前浏览器标签页中恢复。 | [查看说明](./docs/zh-CN/features/state-snapshots.md) |
 | 依赖库 | 按标准库、Dash 组件库、Dash Hooks 库和其他库整理项目直接导入项。 | [查看说明](./docs/zh-CN/features/dependencies.md) |
