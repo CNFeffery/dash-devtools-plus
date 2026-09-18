@@ -7,7 +7,6 @@ All notable changes to this project are documented in this file.
 ### Added
 
 - Added a final Runtime Environment workspace with concise Dash, Python, server, browser, and installed dependency details, plus one-click copying of an issue-ready Markdown report.
-- Added English and Simplified Chinese guides and automated screenshots for the Runtime Environment workspace.
 
 ### Changed
 
