@@ -5,6 +5,13 @@
 <h1 align="center">Dash Devtools Plus</h1>
 
 <p align="center">
+  <a href="https://pypi.org/project/dash-devtools-plus/"><img src="https://img.shields.io/pypi/v/dash-devtools-plus" alt="PyPI 版本"></a>
+  <a href="https://pypi.org/project/dash-devtools-plus/"><img src="https://img.shields.io/pypi/pyversions/dash-devtools-plus" alt="Python 版本"></a>
+  <a href="https://github.com/CNFeffery/dash-devtools-plus/actions/workflows/ci.yml"><img src="https://github.com/CNFeffery/dash-devtools-plus/actions/workflows/ci.yml/badge.svg" alt="CI 状态"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/CNFeffery/dash-devtools-plus?color=0A7ECB" alt="MIT 许可证"></a>
+</p>
+
+<p align="center">
   Dash 应用开发调试额外功能增强插件 ✨，基于 Dash 中的 Hooks 机制。
 </p>
 
@@ -94,13 +101,16 @@ configure_devtools_plus(
 
 ## FastAPI 后端
 
-FastAPI 后端要求 Dash 4.2 及以上版本。安装可选依赖后，`fastapi` 示例会用
-`websocket_callbacks=True` 建立持久连接，通过 `ctx.websocket.get_prop` 读取
-浏览器状态，并用 `set_props` 流式推送服务端时间：
+FastAPI 后端要求 Dash 4.2 及以上版本。安装可选依赖后，可通过
+`backend="fastapi"` 创建后端，也可以将已有的 `FastAPI` 服务传给 `Dash`：
 
 ```bash
 pip install "dash-devtools-plus[fastapi]"
 ```
+
+可参考 [`fastapi` 示例](./examples/fastapi/app.py)：它通过
+`websocket_callbacks=True`、`ctx.websocket.get_prop` 和 `set_props` 实现服务端
+时间流，同时提供自定义异步 FastAPI API。
 
 ## 🛠️ 开发
 

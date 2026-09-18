@@ -8,7 +8,7 @@
   <a href="https://pypi.org/project/dash-devtools-plus/"><img src="https://img.shields.io/pypi/v/dash-devtools-plus" alt="PyPI version"></a>
   <a href="https://pypi.org/project/dash-devtools-plus/"><img src="https://img.shields.io/pypi/pyversions/dash-devtools-plus" alt="Python versions"></a>
   <a href="https://github.com/CNFeffery/dash-devtools-plus/actions/workflows/ci.yml"><img src="https://github.com/CNFeffery/dash-devtools-plus/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/CNFeffery/dash-devtools-plus" alt="MIT License"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/CNFeffery/dash-devtools-plus?color=0A7ECB" alt="MIT License"></a>
 </p>
 
 <p align="center">
