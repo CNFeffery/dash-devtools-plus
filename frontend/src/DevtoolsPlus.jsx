@@ -7,6 +7,7 @@ import {
   CloseOutlined,
   DashboardOutlined,
   GlobalOutlined,
+  DesktopOutlined,
   ProductOutlined,
   ScanOutlined,
   SearchOutlined,
@@ -16,6 +17,7 @@ import ComponentInspectorPanel from "./ComponentInspectorPanel";
 import ComponentProbeOverlay from "./ComponentProbeOverlay";
 import DependenciesPanel from "./DependenciesPanel";
 import DevtoolsAppearancePanel from "./DevtoolsAppearancePanel";
+import RuntimeEnvironmentPanel from "./RuntimeEnvironmentPanel";
 import {createNestedInspection} from "./componentInspector";
 import ServerMetricsPanel, {useServerMetrics} from "./ServerMetricsPanel";
 import StateSnapshotsPanel from "./StateSnapshotsPanel";
@@ -70,6 +72,7 @@ function EnabledDevtoolsPlus({
   callbacksEndpoint = "_dash-devtools-plus/callbacks",
   dependenciesEndpoint = "_dash-devtools-plus/dependencies",
   serverMetricsEndpoint = "_dash-devtools-plus/server-metrics",
+  runtimeEnvironmentEndpoint = "_dash-devtools-plus/runtime-environment",
 }) {
   const {popup, setPopup} = useDevtool();
   const isOpen = popup === POPUP_ID;
@@ -272,6 +275,17 @@ function EnabledDevtoolsPlus({
                   <DevtoolsAppearancePanel
                     value={nativeDevtoolsTheme}
                     onChange={setNativeDevtoolsTheme}
+                    t={t}
+                  />
+                ),
+              },
+              {
+                key: "environment",
+                label: <span className="ddp-tab-label"><DesktopOutlined />{t("runtimeEnvironmentNav")}</span>,
+                children: (
+                  <RuntimeEnvironmentPanel
+                    endpoint={runtimeEnvironmentEndpoint}
+                    isActive={isOpen && activeTab === "environment"}
                     t={t}
                   />
                 ),

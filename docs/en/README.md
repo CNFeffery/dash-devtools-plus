@@ -21,3 +21,4 @@ Your friendly map for exploring Dash Devtools Plus—from a first launch to a fo
 | State snapshots | Capture and restore selected component props in the current tab | [Open](features/state-snapshots.md) |
 | Imported dependencies | Direct project imports grouped by library category | [Open](features/dependencies.md) |
 | Toolbar skins | Preview and apply native Dash Dev Tools toolbar themes | [Open](features/toolbar-skins.md) |
+| Runtime environment | Collect and copy essential Python, system, browser, and package versions | [Open](features/runtime-environment.md) |

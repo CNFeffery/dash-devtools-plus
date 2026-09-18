@@ -19,7 +19,7 @@
   简体中文 | <a href="./README.md">English</a>
 </p>
 
-✨ Dash Devtools Plus 为 Dash 原生 Dev Tools 加入一块聚焦的抽屉面板：查回调、探组件、存状态、理依赖、看资源、换外观，同时始终保留正在运行的应用页面。它只会在明确开启调试的 Dash 会话中出现，避免在普通生产使用中暴露开发元数据。
+✨ Dash Devtools Plus 为 Dash 原生 Dev Tools 加入一块聚焦的抽屉面板：查回调、探组件、存状态、理依赖、看资源、汇总运行环境、换外观，同时始终保留正在运行的应用页面。它只会在明确开启调试的 Dash 会话中出现，避免在普通生产使用中暴露开发元数据。
 
 ## 🚀 打开 Devtools Plus
 
@@ -59,6 +59,7 @@ if __name__ == "__main__":
 | 状态快照 | 保存选中组件的 Props，并在当前浏览器标签页中恢复。 | [查看说明](./docs/zh-CN/features/state-snapshots.md) |
 | 依赖库 | 按标准库、Dash 组件库、Dash Hooks 库和其他库整理项目直接导入项。 | [查看说明](./docs/zh-CN/features/dependencies.md) |
 | 工具条换肤 | 预览并应用 Dash 原生 Dev Tools 工具栏与错误展示主题。 | [查看说明](./docs/zh-CN/features/toolbar-skins.md) |
+| 运行环境信息 | 汇总必要的 Python、系统、浏览器和第三方包版本，并一键复制 Issue 环境报告。 | [查看说明](./docs/zh-CN/features/runtime-environment.md) |
 
 ## ⚙️ 可选配置
 

@@ -271,10 +271,10 @@ def test_dependency_inventory_unifies_imported_library_categories():
         "dash-hook",
     }
     assert inventory["summary"] == {
-        "total": 11,
+        "total": 10,
         "standard": 3,
         "dashComponents": 6,
-        "dashHooks": 2,
+        "dashHooks": 1,
         "other": 0,
     }
 
@@ -290,6 +290,40 @@ def test_dependency_inventory_unifies_imported_library_categories():
     assert all(item["hook"]["status"] != "discovered" for item in hooks)
     assert not any(item["id"] == "hook:plotly-cloud" for item in hooks)
     assert not any(
+        item["name"].startswith("examples.") for item in inventory["libraries"]
+    )
+    assert not any(
         item["name"] in {"Flask", "Werkzeug"} for item in inventory["libraries"]
     )
     assert inventory["hookMeta"]["dashVersion"]
+
+
+def test_runtime_environment_combines_server_and_dependency_information():
+    enable_dev_tools_once()
+
+    response = app.server.test_client().get("/_dash-devtools-plus/runtime-environment")
+    environment = response.get_json()
+
+    assert response.status_code == 200
+    assert environment["schemaVersion"] == 1
+    assert environment["generatedAt"] > 0
+    assert environment["application"]["dashVersion"]
+    assert environment["application"]["devtoolsPlusVersion"] == "0.1.3"
+    assert environment["python"]["version"]
+    assert environment["python"]["implementation"]
+    assert set(environment["python"]) == {"version", "implementation"}
+    assert environment["server"]["operatingSystem"]
+    assert environment["server"]["architecture"]
+    assert set(environment["server"]) == {
+        "operatingSystem",
+        "osRelease",
+        "architecture",
+    }
+    libraries = environment["dependencies"]["libraries"]
+    assert libraries
+    assert all(
+        set(library) == {"name", "version"} and library["version"]
+        for library in libraries
+    )
+    assert "pathlib" not in {library["name"] for library in libraries}
+    assert not any(library["name"].startswith("examples.") for library in libraries)

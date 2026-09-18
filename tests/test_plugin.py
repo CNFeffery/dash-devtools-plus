@@ -33,6 +33,9 @@ def test_registration_is_idempotent_and_configurable():
     )
     assert props["hookLibrariesEndpoint"] == "_dash-devtools-plus/hook-libraries"
     assert props["serverMetricsEndpoint"] == "_dash-devtools-plus/server-metrics"
+    assert (
+        props["runtimeEnvironmentEndpoint"] == "_dash-devtools-plus/runtime-environment"
+    )
     assert "metricsEndpoint" not in props
     assert "metricsInterval" not in props
 
@@ -57,6 +60,7 @@ def test_devtools_config_has_no_metrics_route():
         "/_dash-devtools-plus/component-libraries",
         "/_dash-devtools-plus/hook-libraries",
         "/_dash-devtools-plus/server-metrics",
+        "/_dash-devtools-plus/runtime-environment",
     ],
 )
 def test_all_routes_are_disabled_without_debug(endpoint):
@@ -78,6 +82,7 @@ def test_all_routes_are_disabled_without_debug(endpoint):
         "/_dash-devtools-plus/component-libraries",
         "/_dash-devtools-plus/hook-libraries",
         "/_dash-devtools-plus/server-metrics",
+        "/_dash-devtools-plus/runtime-environment",
     ],
 )
 def test_dev_tools_ui_alone_does_not_enable_routes(endpoint):
@@ -190,6 +195,40 @@ def test_dependency_scan_does_not_recurse_into_project_virtualenv(
     assert "transitive" not in direct_imports
     assert "release_test_app" in local_roots
     assert "external" not in local_roots
+
+
+def test_dependency_inventory_does_not_treat_custom_modules_as_other(
+    tmp_path, monkeypatch
+):
+    custom_source = tmp_path / "custom_tools.py"
+    custom_source.write_text("", encoding="utf-8")
+    custom_module = ModuleType("custom_tools")
+    custom_module.__file__ = str(custom_source)
+    monkeypatch.setitem(sys.modules, "custom_tools", custom_module)
+    monkeypatch.setattr(plugin, "_component_library_metadata", lambda: [])
+    monkeypatch.setattr(plugin, "_module_distribution_map", lambda: {})
+    monkeypatch.setattr(
+        plugin,
+        "_application_direct_imports",
+        lambda app: ({"custom_tools"}, set()),
+    )
+    monkeypatch.setattr(
+        plugin,
+        "build_hook_inventory",
+        lambda app: {
+            "libraries": [],
+            "dashVersion": "4.0.0",
+            "completeness": {},
+            "summary": {},
+            "orderWarnings": [],
+            "unassigned": [],
+        },
+    )
+
+    inventory = plugin._loaded_dependency_metadata(SimpleNamespace())
+
+    assert inventory["libraries"] == []
+    assert inventory["summary"]["other"] == 0
 
 
 def test_built_assets_exist_and_are_registered():

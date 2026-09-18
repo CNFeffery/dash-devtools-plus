@@ -21,6 +21,7 @@ DEVTOOLS_ENDPOINTS = (
     "/_dash-devtools-plus/component-libraries",
     "/_dash-devtools-plus/hook-libraries",
     "/_dash-devtools-plus/server-metrics",
+    "/_dash-devtools-plus/runtime-environment",
 )
 
 

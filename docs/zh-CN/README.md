@@ -21,3 +21,4 @@
 | 状态快照 | 在当前标签页中保存并恢复选中组件的 Props | [查看](features/state-snapshots.md) |
 | 依赖库 | 按类别呈现项目直接导入的依赖 | [查看](features/dependencies.md) |
 | 工具条换肤 | 预览并应用 Dash 原生 Dev Tools 工具栏主题 | [查看](features/toolbar-skins.md) |
+| 运行环境信息 | 汇总并复制必要的 Python、系统、浏览器与第三方包版本 | [查看](features/runtime-environment.md) |

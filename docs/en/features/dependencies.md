@@ -24,4 +24,4 @@ Rows for Dash component and Hook libraries can expand:
 - Component rows show package module, scope, exports, browser assets, and project aliases.
 - Hook rows show entry points, source, status, hook types, and runtime registration details.
 
-The inventory applies the configured `project_root` boundary and excludes common virtual-environment and third-party locations. It is an import-based development inventory, not a lock-file or vulnerability audit.
+The inventory applies the configured `project_root` boundary and excludes common virtual-environment locations. Project-local modules—including Hooks registered manually from application source—are not presented as “Other” or external dependencies; a third-party import must map to an installed Python distribution to enter the inventory. It is an import-based development inventory, not a lock-file or vulnerability audit.

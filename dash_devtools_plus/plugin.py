@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import platform
 import re
 import shutil
 import sys
@@ -46,6 +47,7 @@ _DEPENDENCIES_ROUTE = "_dash-devtools-plus/dependencies"
 _COMPONENT_LIBRARIES_ROUTE = "_dash-devtools-plus/component-libraries"
 _HOOK_LIBRARIES_ROUTE = "_dash-devtools-plus/hook-libraries"
 _SERVER_METRICS_ROUTE = "_dash-devtools-plus/server-metrics"
+_RUNTIME_ENVIRONMENT_ROUTE = "_dash-devtools-plus/runtime-environment"
 _COMPONENT_LIBRARY_SIGNATURE = frozenset({"_component", "_dash", "_js_dist"})
 _PROJECT_MARKERS = ("pyproject.toml", "setup.py", "setup.cfg", ".git")
 _EDITOR_ORDER = ("vscode", "cursor", "pycharm")
@@ -129,6 +131,7 @@ def _component_props_for(app: Any | None) -> dict[str, Any]:
         "componentLibrariesEndpoint": _COMPONENT_LIBRARIES_ROUTE,
         "hookLibrariesEndpoint": _HOOK_LIBRARIES_ROUTE,
         "serverMetricsEndpoint": _SERVER_METRICS_ROUTE,
+        "runtimeEnvironmentEndpoint": _RUNTIME_ENVIRONMENT_ROUTE,
     }
 
 
@@ -883,6 +886,21 @@ def _matches_direct_import(module_name: str, direct_imports: set[str]) -> bool:
     )
 
 
+def _distribution_owns_module(
+    distribution_map: dict[str, tuple[str, ...]],
+    root_name: str,
+    display_name: str,
+) -> bool:
+    """Reject unrelated top-level-name collisions in distribution metadata."""
+
+    def normalise(value: str) -> str:
+        return re.sub(r"[-_.]+", "-", value).casefold()
+
+    owners = {normalise(name) for name in distribution_map.get(root_name, ())}
+    candidates = {normalise(root_name), normalise(display_name)}
+    return bool(owners & candidates)
+
+
 def _loaded_dependency_metadata(app: Any) -> dict[str, Any]:
     """Build an inventory of libraries directly imported by application code."""
 
@@ -933,6 +951,12 @@ def _loaded_dependency_metadata(app: Any) -> dict[str, Any]:
 
     for component in component_libraries:
         root_name = component["module"].partition(".")[0]
+        if not _distribution_owns_module(
+            distribution_map, root_name, component["name"]
+        ):
+            # Component-shaped modules inside the project are application code,
+            # not installed dependencies.
+            continue
         is_direct_component = component["module"] in direct_imports or (
             not component["module"].startswith("dash.") and root_name in direct_roots
         )
@@ -960,6 +984,13 @@ def _loaded_dependency_metadata(app: Any) -> dict[str, Any]:
         hook_roots = {
             module.partition(".")[0] for module in hook_library["modules"] if module
         }
+        if not any(
+            _distribution_owns_module(distribution_map, root_name, hook_library["name"])
+            for root_name in hook_roots
+        ):
+            # Manually registered Hooks can come from project-local modules.
+            # Only inventory Hooks owned by an installed distribution.
+            continue
         if not any(
             _matches_direct_import(module, direct_imports)
             for module in hook_library["modules"]
@@ -1001,7 +1032,12 @@ def _loaded_dependency_metadata(app: Any) -> dict[str, Any]:
             )
             continue
 
-        distribution_name = distributions[0] if distributions else root_name
+        if not distributions:
+            # A non-standard module without distribution ownership is project
+            # or runtime-local code, not an external dependency.
+            continue
+
+        distribution_name = distributions[0]
         distribution_id = re.sub(r"[-_.]+", "-", distribution_name).casefold()
         record = other_distributions.setdefault(
             distribution_id,
@@ -1064,6 +1100,47 @@ def _serve_dependency_metadata():
     return _debug_only_response(app, lambda: _loaded_dependency_metadata(app))
 
 
+def _runtime_environment_metadata(app: Any) -> dict[str, Any]:
+    """Build a compact issue-ready description of the active runtime."""
+
+    dependencies = _loaded_dependency_metadata(app)
+    metrics = collect_server_metrics()
+    system = metrics["system"]
+    libraries = sorted(
+        (
+            {"name": item["name"], "version": item["version"]}
+            for item in dependencies["libraries"]
+            if item["category"] != "standard" and item["version"]
+        ),
+        key=lambda item: item["name"].casefold(),
+    )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": metrics["timestamp"],
+        "application": {
+            "dashVersion": dependencies["hookMeta"]["dashVersion"]
+            or _distribution_version("dash"),
+            "devtoolsPlusVersion": _distribution_version("dash-devtools-plus"),
+        },
+        "python": {
+            "version": platform.python_version(),
+            "implementation": platform.python_implementation(),
+        },
+        "server": {
+            "operatingSystem": system["operatingSystem"],
+            "osRelease": system["osRelease"],
+            "architecture": system["architecture"],
+        },
+        "dependencies": {"libraries": libraries},
+    }
+
+
+def _serve_runtime_environment():
+    app = get_app()
+    return _debug_only_response(app, lambda: _runtime_environment_metadata(app))
+
+
 def _serve_server_metrics():
     app = get_app()
     return _debug_only_response(app, collect_server_metrics)
@@ -1101,6 +1178,7 @@ def register() -> None:
         hooks.route(name=_COMPONENT_LIBRARIES_ROUTE)(_serve_component_library_metadata)
         hooks.route(name=_HOOK_LIBRARIES_ROUTE)(_serve_hook_library_metadata)
         hooks.route(name=_SERVER_METRICS_ROUTE)(_serve_server_metrics)
+        hooks.route(name=_RUNTIME_ENVIRONMENT_ROUTE)(_serve_runtime_environment)
         hooks.setup(priority=sys.maxsize)(_setup_app)
 
         hooks.devtool(
