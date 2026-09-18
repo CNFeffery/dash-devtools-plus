@@ -61,7 +61,9 @@ app.layout = html.Main(
     [
         html.Header(
             [
-                html.P("COMPONENT INSPECTOR REGRESSION", style={"letterSpacing": "0.12em"}),
+                html.P(
+                    "COMPONENT INSPECTOR REGRESSION", style={"letterSpacing": "0.12em"}
+                ),
                 html.H1("Component-valued prop hierarchy isolation"),
                 html.P(
                     "Inspect the first Tab itself. Its label contains one component; "
@@ -164,7 +166,9 @@ app.layout = html.Main(
 )
 
 
-@app.callback(Output("loading-output", "children"), Input("loading-trigger", "n_clicks"))
+@app.callback(
+    Output("loading-output", "children"), Input("loading-trigger", "n_clicks")
+)
 def update_loading_output(n_clicks: int) -> str:
     """Keep the loading target connected to a real callback."""
 
