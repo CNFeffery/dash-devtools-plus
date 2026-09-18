@@ -189,6 +189,70 @@ test("inspection skips a special namespace and resolves a regular Dash parent", 
   assert.equal(result.id, "regular-parent");
 });
 
+test("inspection keeps component props isolated from hydrated Fiber owners", () => {
+  const target = new FakeElement();
+  const root = new FakeElement({id: "component-prop-target"});
+  const expectedSlot = component(
+    "dash_html_components",
+    "Span",
+    "expected-slot",
+    "Expected",
+  );
+  const unrelatedChildren = Array.from({length: 12}, (_, index) => (
+    component("dash_html_components", "Article", `unrelated-${index}`, "Unrelated")
+  ));
+  const layout = {
+    namespace: "test_components",
+    type: "ComponentPropCarrier",
+    props: {
+      id: "component-prop-target",
+      children: unrelatedChildren,
+      slot: expectedSlot,
+    },
+  };
+  const hydratedSlot = {
+    "$$typeof": Symbol.for("react.element"),
+    props: {children: expectedSlot},
+    _owner: {memoizedProps: {children: unrelatedChildren}},
+  };
+  globalThis.window = {
+    dash_component_api: {
+      getLayout: () => layout,
+    },
+    dash_html_components: {Article: {}, Span: {}},
+    test_components: {ComponentPropCarrier: {}},
+  };
+  target["__reactFiber$test"] = {
+    memoizedProps: {},
+    return: {
+      memoizedProps: {
+        id: "component-prop-target",
+        setProps: () => {},
+        slot: hydratedSlot,
+      },
+      return: {
+        memoizedProps: {componentPath: ["target"]},
+        return: null,
+        stateNode: root,
+      },
+      stateNode: null,
+    },
+    stateNode: target,
+  };
+
+  const result = findClosestDashComponent(target);
+  const slotTargets = findInspectableDashComponents(result.props.slot);
+
+  assert.equal(result.namespace, "test_components");
+  assert.equal(result.type, "ComponentPropCarrier");
+  assert.deepEqual(result.props.slot, expectedSlot);
+  assert.deepEqual(
+    slotTargets.map(({component: item}) => item.props.id),
+    ["expected-slot"],
+  );
+  assert.equal("setProps" in result.props, false);
+});
+
 test("snapshot scanning excludes special namespaces and their subtrees", () => {
   const hiddenChild = component("dash_html_components", "Button", "hidden-child");
   const special = component(

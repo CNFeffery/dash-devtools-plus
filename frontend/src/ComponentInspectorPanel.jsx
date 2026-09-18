@@ -75,6 +75,16 @@ function CopyablePropValue({children, copied, onCopy, t}) {
 }
 
 function JsonValue({copied, expanded, onCopy, onInspect, onToggle, t, value}) {
+  const isStructured = value != null && typeof value === "object";
+  const componentTargets = useMemo(
+    () => isStructured ? findInspectableDashComponents(value) : [],
+    [isStructured, value],
+  );
+  const expandedJson = useMemo(
+    () => isStructured && expanded ? formatInspectorPropValue(value) : null,
+    [expanded, isStructured, value],
+  );
+
   if (typeof value === "boolean") {
     return (
       <CopyablePropValue copied={copied} onCopy={onCopy} t={t}>
@@ -96,9 +106,7 @@ function JsonValue({copied, expanded, onCopy, onInspect, onToggle, t, value}) {
       </CopyablePropValue>
     );
   }
-  const json = formatInspectorPropValue(value);
   const count = Array.isArray(value) ? value.length : Object.keys(value).length;
-  const componentTargets = findInspectableDashComponents(value);
   const structuredValue = !expanded ? (
       <button className="ddp-inspector-value-toggle" type="button" onClick={onToggle}>
         <code>{Array.isArray(value) ? `Array(${count})` : `Object(${count})`}</code>
@@ -106,7 +114,7 @@ function JsonValue({copied, expanded, onCopy, onInspect, onToggle, t, value}) {
       </button>
   ) : (
     <div className="ddp-inspector-expanded-value">
-      <pre>{json}</pre>
+      <pre>{expandedJson}</pre>
       <Button type="link" size="small" icon={<UpOutlined />} onClick={onToggle}>{t("collapsePropValue")}</Button>
     </div>
   );

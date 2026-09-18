@@ -79,16 +79,6 @@ function getLayout(reference) {
   }
 }
 
-function stringifyDashId(id) {
-  if (id == null) return null;
-  if (typeof id === "string") return id;
-  try {
-    return window.dash_component_api?.stringifyId?.(id) || JSON.stringify(id);
-  } catch {
-    return String(id);
-  }
-}
-
 function valueType(value) {
   if (value === null) return "null";
   if (Array.isArray(value)) return "array";
@@ -198,43 +188,13 @@ function buildDomDescriptor(element) {
   };
 }
 
-function runtimePropsFor(frames, layout) {
-  const expectedId = stringifyDashId(layout.props?.id);
-  const candidates = frames
-    .map((frame) => frame?.memoizedProps || frame?.pendingProps)
-    .filter((props) => props && typeof props === "object");
-
-  let match = candidates.find((props) => (
-    typeof props.setProps === "function" &&
-    expectedId &&
-    stringifyDashId(props.id) === expectedId
-  ));
-  match ||= candidates.find((props) => typeof props.setProps === "function");
-  if (!match) return layout.props || {};
-
-  const merged = {...layout.props, ...match};
-  merged.children = layout.props?.children;
-  delete merged.setProps;
-  delete merged.dashRenderType;
-  const publicPropTypes = window[layout.namespace]?.[layout.type]?.propTypes;
-  const publicProps = publicPropTypes ? new Set(Object.keys(publicPropTypes)) : null;
-  const internalProps = new Set([
-    "paginator", "rawFilterQuery", "scrollbarWidth", "setState", "viewport",
-    "viewport_selected_columns", "viewport_selected_rows", "virtual",
-    "virtual_selected_rows", "virtualized", "visibleColumns", "workFilter",
-  ]);
-  Object.keys(merged).forEach((key) => {
-    if (
-      key.startsWith("_dashprivate_") ||
-      internalProps.has(key) ||
-      (publicProps && !publicProps.has(key) && !(key in (layout.props || {})))
-    ) delete merged[key];
-  });
-  return merged;
-}
-
-function inspectionResult(layout, path, target, root, frames = []) {
-  const rawProps = runtimePropsFor(frames, layout);
+function inspectionResult(layout, path, target, root) {
+  // getLayout reads the current Dash store, including callback and setProps
+  // updates. Fiber props are already hydrated for React rendering: component-
+  // valued props become React elements whose owner links can expose unrelated
+  // ancestors and siblings. Keep Fiber traversal exclusively for locating the
+  // Dash layout path and never use it as inspector data.
+  const rawProps = layout.props || {};
   const props = sanitizeInspectorValue(rawProps);
   const rect = root.getBoundingClientRect();
   return {
@@ -264,17 +224,15 @@ export function findClosestDashComponent(target) {
 
   const react = findReactFiber(target);
   if (react?.fiber) {
-    const frames = [];
     let root = react.host;
     let legacyCandidate = null;
     for (let fiber = react.fiber; fiber; fiber = fiber.return) {
-      frames.push(fiber);
       if (fiber.stateNode instanceof Element) root = fiber.stateNode;
       const props = fiber.memoizedProps || fiber.pendingProps || {};
       const path = Array.isArray(props.componentPath) ? props.componentPath : null;
       const layout = path ? getLayout(path) : null;
       if (isDashComponentDefinition(layout)) {
-        return inspectionResult(layout, path, target, root, frames);
+        return inspectionResult(layout, path, target, root);
       }
 
       const legacyLayout = props._dashprivate_layout || props.component;
@@ -288,7 +246,6 @@ export function findClosestDashComponent(target) {
         null,
         target,
         legacyCandidate.root,
-        frames,
       );
     }
   }
