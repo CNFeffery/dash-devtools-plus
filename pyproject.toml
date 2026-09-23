@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dash-devtools-plus"
-version = "0.1.3"
+version = "0.1.4"
 description = "A focused developer console for Dash applications, powered by Dash hooks."
 readme = "README.md"
 requires-python = ">=3.9"

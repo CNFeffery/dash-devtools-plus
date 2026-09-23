@@ -37,9 +37,7 @@ except ImportError:  # Support direct script execution during local development.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 configure_devtools_plus(
-    default_locale="en",
-    project_root=PROJECT_ROOT,
-    editor_project_root=PROJECT_ROOT,
+    default_locale="en", project_root=PROJECT_ROOT, editor_project_root=PROJECT_ROOT
 )
 
 app = Dash(

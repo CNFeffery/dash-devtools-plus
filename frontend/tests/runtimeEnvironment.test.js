@@ -34,7 +34,7 @@ test("environment report includes app, system, browser, and dependency details",
   const report = buildEnvironmentReport(
     {
       generatedAt: Date.UTC(2026, 8, 18),
-      application: {dashVersion: "4.0.0", devtoolsPlusVersion: "0.1.3"},
+      application: {dashVersion: "4.0.0", devtoolsPlusVersion: "0.1.4"},
       python: {version: "3.13.7", implementation: "CPython", compiler: "MSC"},
       server: {operatingSystem: "Windows", osRelease: "11", architecture: "AMD64"},
       dependencies: {libraries: [{name: "dash", version: "4.0.0"}]},

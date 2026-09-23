@@ -243,7 +243,7 @@ def test_hook_library_inventory_reports_entry_points_and_runtime_order():
     ]
     assert len(installed) == 1
     assert installed[0]["status"] == "registered"
-    assert installed[0]["version"] == "0.1.3"
+    assert installed[0]["version"] == "0.1.4"
     hook_types = {item["type"] for item in installed[0]["hookTypes"]}
     assert {"devtool", "routes", "script", "setup", "stylesheet"} <= hook_types
 
@@ -310,7 +310,7 @@ def test_runtime_environment_combines_server_and_dependency_information():
     assert environment["schemaVersion"] == 1
     assert environment["generatedAt"] > 0
     assert environment["application"]["dashVersion"]
-    assert environment["application"]["devtoolsPlusVersion"] == "0.1.3"
+    assert environment["application"]["devtoolsPlusVersion"] == "0.1.4"
     assert environment["python"]["version"]
     assert environment["python"]["implementation"]
     assert set(environment["python"]) == {"version", "implementation"}
