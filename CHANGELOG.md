@@ -4,19 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## [0.1.4] - Unreleased
 
-### Added
-
-- Added current-page callback performance monitoring with bounded execution history, average/latest/minimum/maximum duration, server/network timing, transfer sizes, and completion status, derived from Dash Renderer’s built-in profile data.
-- Made execution count, average duration, and latest duration independently sortable, with descending-first ordering for faster bottleneck discovery.
-- Added a sortable last-execution column with local absolute timestamps and live, threshold-based relative time labels.
-
-### Changed
-
-- Moved callback performance to the bottom of the details modal and rebuilt it as a compact instrumentation console with an integrated summary rail, low-padding analysis panel, restrained transfer breakdown, and condensed history states.
-- Reworked the duration trend into a compact, smooth stacked server/network area chart and added a 500 ms detail-view refresh fallback so polling callbacks remain live without manual interaction.
-- Fixed the narrow-screen tab overflow menu so it renders above the Devtools drawer on hover, and allowed the runtime dependency list to expand naturally without a nested scrollbar.
-- Refined the callback table with single-line headers, vertically centered cells, stronger column separation, pinned callback-type/source columns, a compact horizontal scrollbar, and one-line Docstring previews.
-- Flattened the performance columns and added a browser-persisted control for showing or hiding all callback performance metrics.
+- Added live, page-scoped callback performance tracking with sortable metrics, execution history, transfer sizes, and saved column visibility.
+- Redesigned the callback table and details view with a compact timing chart and clearer layout.
+- Fixed the narrow-screen tab menu and nested scrolling in the runtime dependency list.
 
 ## [0.1.3] - 2026-09-18
 
