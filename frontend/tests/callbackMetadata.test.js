@@ -6,6 +6,7 @@ import {normalizeCallbacks} from "../src/utils.js";
 test("callback normalization preserves Docstring formatting and registration sources", () => {
   const [callback] = normalizeCallbacks([
     {
+      callback_id: "result.children",
       output: "result.children",
       inputs: [{id: "trigger", property: "n_clicks"}],
       state: [],
@@ -27,6 +28,24 @@ test("callback normalization preserves Docstring formatting and registration sou
   );
   assert.match(callback.sourceText, /Preserved indentation/);
   assert.equal(callback.sourceKind, "python");
+  assert.equal(callback.callbackId, "result.children");
+});
+
+test("callback normalization keeps Dash's internal ID for no-output callbacks", () => {
+  const [callback] = normalizeCallbacks([
+    {
+      callback_id: "8f375ce8e4d7",
+      output: null,
+      no_output: true,
+      inputs: [{id: "trigger", property: "n_clicks"}],
+      state: [],
+      source: {kind: "python"},
+    },
+  ]);
+
+  assert.equal(callback.callbackId, "8f375ce8e4d7");
+  assert.equal(callback.key, "0-8f375ce8e4d7");
+  assert.deepEqual(callback.outputs, []);
 });
 
 test("callback normalization exposes clientside Python registration locations", () => {

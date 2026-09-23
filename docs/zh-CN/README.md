@@ -15,7 +15,7 @@
 
 | 工作区 | 可帮助查看的内容 | 子文档 |
 | --- | --- | --- |
-| 回调关系 | 回调拓扑、源码、角色和运行元数据 | [查看](features/callbacks.md) |
+| 回调关系 | 回调拓扑、源码、角色和页面生命周期性能历史 | [查看](features/callbacks.md) |
 | 服务器资源 | CPU、内存、磁盘与运行环境的实时信息 | [查看](features/server-metrics.md) |
 | 组件探查 | 将页面 DOM 元素定位回 Dash 组件及其 Props | [查看](features/component-inspector.md) |
 | 状态快照 | 在当前标签页中保存并恢复选中组件的 Props | [查看](features/state-snapshots.md) |

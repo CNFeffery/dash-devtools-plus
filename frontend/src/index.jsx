@@ -4,8 +4,11 @@ import {applyNativeDevtoolsTheme, readNativeDevtoolsTheme} from "./nativeDevtool
 import {observeNativeErrorFrames} from "./nativeErrorFrameTheme";
 import "./styles.css";
 import embeddedStyles from "./styles.css?inline";
+import {installCallbackPerformanceMonitor} from "./callbackPerformance";
 
 const STYLE_ELEMENT_ID = "dash-devtools-plus-runtime-styles";
+installCallbackPerformanceMonitor(window);
+
 let styleElement = document.getElementById(STYLE_ELEMENT_ID);
 
 if (!styleElement) {

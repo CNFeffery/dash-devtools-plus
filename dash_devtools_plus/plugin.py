@@ -590,6 +590,10 @@ def _callback_metadata(app: Any) -> list[dict[str, Any]]:
     for dependency in app._callback_list:  # pylint: disable=protected-access
         item = dict(dependency)
         callback_id = item.get("output")
+        # Keep Dash's exact registry key even when the display output is hidden
+        # for no-output callbacks. The browser-side performance profile uses
+        # this value as its stable callback identifier.
+        item["callback_id"] = callback_id
         callback_entry = app.callback_map.get(callback_id, {})
         if item.get("no_output"):
             # Dash uses an internal hash as the registry key for callbacks with

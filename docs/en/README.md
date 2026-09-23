@@ -15,7 +15,7 @@ Your friendly map for exploring Dash Devtools Plus—from a first launch to a fo
 
 | Workspace | What it helps you inspect | Documentation |
 | --- | --- | --- |
-| Callback relationships | Callback topology, sources, roles, and execution metadata | [Open](features/callbacks.md) |
+| Callback relationships | Callback topology, sources, roles, and lifecycle performance history | [Open](features/callbacks.md) |
 | Server resource monitor | Live CPU, memory, disk, and runtime information | [Open](features/server-metrics.md) |
 | Component inspector | Map rendered DOM elements back to Dash components and props | [Open](features/component-inspector.md) |
 | State snapshots | Capture and restore selected component props in the current tab | [Open](features/state-snapshots.md) |

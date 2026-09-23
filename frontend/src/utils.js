@@ -153,9 +153,11 @@ export function normalizeCallbacks(items) {
     const docstring = typeof source.docstring === "string" ? source.docstring : "";
     const editorUri = typeof source.editorUri === "string" ? source.editorUri : "";
     const editorUris = normalizeEditorTargets(source, editorUri);
+    const callbackId = String(item.callback_id || item.output || "");
     return {
-      key: `${index}-${item.output || "no-output"}`,
+      key: `${index}-${callbackId || "no-output"}`,
       index: index + 1,
+      callbackId,
       mode,
       hidden,
       outputs,

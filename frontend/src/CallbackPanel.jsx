@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {Alert, Button, Dropdown, Empty, Input, Modal, Popover, Select, Space, Table, Tag, Tooltip} from "antd";
+import {Alert, Button, Dropdown, Empty, Input, Modal, Popover, Select, Space, Switch, Table, Tag, Tooltip} from "antd";
 import {
   ApiOutlined,
   ApartmentOutlined,
@@ -11,17 +11,28 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
   ExportOutlined,
+  FieldTimeOutlined,
   FileTextOutlined,
   FilterOutlined,
+  HistoryOutlined,
   ImportOutlined,
   InfoCircleOutlined,
+  LineChartOutlined,
   NodeIndexOutlined,
   ReloadOutlined,
   SearchOutlined,
   StopOutlined,
+  SwapOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
 import {siCursor, siPycharm} from "simple-icons";
+import {comparePerformanceValues, describeExecutionRecency} from "./callbackPerformance";
+import {
+  readCallbackPerformanceColumns,
+  writeCallbackPerformanceColumns,
+} from "./callbackTablePreferences";
 import {endpointUrl, normalizeCallbacks} from "./utils";
+import {useCallbackPerformance, useCallbackPerformanceSnapshot} from "./useCallbackPerformance";
 
 const PAGE_SIZE = 8;
 const SELECT_CLASS_NAMES = {popup: {root: "ddp-callback-select-popup"}};
@@ -229,6 +240,338 @@ function DocstringCell({docstring, mode, t}) {
   );
 }
 
+function formatDuration(value, empty = "—") {
+  if (!Number.isFinite(value)) return empty;
+  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10000 ? 1 : 2)} s`;
+  if (value > 0 && value < 1) return "<1 ms";
+  return `${Math.round(value)} ms`;
+}
+
+function formatBytes(value, empty = "—") {
+  if (!Number.isFinite(value)) return empty;
+  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(2)} MiB`;
+  if (value >= 1024) return `${(value / 1024).toFixed(1)} KiB`;
+  return `${Math.round(value)} B`;
+}
+
+function performanceStatusLabel(status, t) {
+  return {
+    SUCCESS: t("performanceStatusSuccess"),
+    NO_UPDATE: t("performanceStatusNoUpdate"),
+    NO_RESPONSE: t("performanceStatusNoResponse"),
+    CLIENTSIDE_ERROR: t("performanceStatusClientError"),
+  }[status] || status || t("performanceStatusUnknown");
+}
+
+function PerformanceMetricCell({connected, metric, performance, t}) {
+  if (!connected) {
+    return (
+      <span className="ddp-performance-empty">
+        <FieldTimeOutlined aria-hidden="true" />
+        {t("performanceWaiting")}
+      </span>
+    );
+  }
+
+  const value = performance[metric];
+  const isExecutionCount = metric === "executionCount";
+  if (!isExecutionCount && !Number.isFinite(value)) {
+    return <span className="ddp-performance-empty">—</span>;
+  }
+
+  return (
+    <span className={`ddp-performance-metric is-${metric}`}>
+      {isExecutionCount ? value : formatDuration(value)}
+    </span>
+  );
+}
+
+function formatLocalExecutionTime(completedAt) {
+  if (!Number.isFinite(completedAt)) return "—";
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date(completedAt));
+}
+
+function formatExecutionRecency(completedAt, currentTime, t) {
+  const recency = describeExecutionRecency(completedAt, currentTime);
+  if (!recency) return t("performanceNotRun");
+  if (recency.bucket === "seconds") {
+    return t("lastExecutionSecondsAgo").replace("{seconds}", String(recency.seconds));
+  }
+  if (recency.bucket === "minutes") {
+    return t("lastExecutionMinutesAgo")
+      .replace("{minutes}", String(recency.minutes))
+      .replace("{seconds}", String(recency.seconds));
+  }
+  return t("lastExecutionOverTenMinutesAgo");
+}
+
+function LastExecutionCell({connected, completedAt, currentTime, t}) {
+  if (!connected) {
+    return (
+      <span className="ddp-performance-empty">
+        <FieldTimeOutlined aria-hidden="true" />
+        {t("performanceWaiting")}
+      </span>
+    );
+  }
+  if (!Number.isFinite(completedAt)) {
+    return <span className="ddp-performance-empty">{t("performanceNotRun")}</span>;
+  }
+
+  const absoluteTime = formatLocalExecutionTime(completedAt);
+  return (
+    <time
+      className="ddp-last-execution"
+      dateTime={new Date(completedAt).toISOString()}
+      title={absoluteTime}
+    >
+      <strong>{absoluteTime}</strong>
+      <span><HistoryOutlined aria-hidden="true" />{formatExecutionRecency(completedAt, currentTime, t)}</span>
+    </time>
+  );
+}
+
+function PerformanceSparkline({history, t}) {
+  const records = history
+    .filter((record) => record.measurementAvailable)
+    .slice(-30);
+  const plottedRecords = records.length === 1 ? [records[0], records[0]] : records;
+  const width = 420;
+  const height = 82;
+  const paddingX = 6;
+  const paddingY = 6;
+  const baseline = height - paddingY;
+  const maximum = records.length
+    ? Math.max(...records.map((record) => record.totalMs)) * 1.12
+    : 1;
+  const pointFor = (value, index) => {
+    const x = paddingX + (index / Math.max(1, plottedRecords.length - 1)) * (width - paddingX * 2);
+    const y = baseline - (Math.max(0, value) / Math.max(1, maximum)) * (height - paddingY * 2);
+    return {x, y};
+  };
+  const totalPoints = plottedRecords.map((record, index) => pointFor(record.totalMs, index));
+  const serverPoints = plottedRecords.map((record, index) => pointFor(
+    Math.min(record.totalMs, Math.max(0, Number(record.serverMs) || 0)),
+    index,
+  ));
+  const curvePath = (points) => {
+    if (!points.length) return "";
+    return points.slice(1).reduce((path, point, index) => {
+      const previous = points[index];
+      const middleX = previous.x + (point.x - previous.x) / 2;
+      return `${path} C ${middleX.toFixed(1)},${previous.y.toFixed(1)} ${middleX.toFixed(1)},${point.y.toFixed(1)} ${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+    }, `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`);
+  };
+  const curveCommands = (points) => curvePath(points).replace(/^M [^C]+/, "");
+  const totalLine = curvePath(totalPoints);
+  const serverLine = curvePath(serverPoints);
+  const serverArea = serverPoints.length
+    ? `M ${serverPoints[0].x.toFixed(1)},${baseline} L ${serverPoints[0].x.toFixed(1)},${serverPoints[0].y.toFixed(1)} ${curveCommands(serverPoints)} L ${serverPoints.at(-1).x.toFixed(1)},${baseline} Z`
+    : "";
+  const reversedServerPoints = [...serverPoints].reverse();
+  const networkArea = totalPoints.length
+    ? `${totalLine} L ${reversedServerPoints[0].x.toFixed(1)},${reversedServerPoints[0].y.toFixed(1)} ${curveCommands(reversedServerPoints)} Z`
+    : "";
+  const latestPoint = totalPoints.at(-1);
+  const latestRecord = records.at(-1);
+
+  return (
+    <div className="ddp-performance-chart">
+      <div className="ddp-performance-chart-label">
+        <span className="ddp-performance-chart-title"><LineChartOutlined />{t("performanceTrend")}</span>
+        <div className="ddp-performance-chart-meta">
+          <small>{t("performanceRecentSamples").replace("{count}", String(records.length))}</small>
+          <span className="ddp-performance-chart-legend is-server"><i />{t("performanceServer")}</span>
+          <span className="ddp-performance-chart-legend is-network"><i />{t("performanceNetwork")}</span>
+        </div>
+      </div>
+      {records.length ? (
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={t("performanceTrend")}>
+          <defs>
+            <linearGradient id="ddp-performance-server-fill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="#36a986" stopOpacity="0.42" />
+              <stop offset="1" stopColor="#36a986" stopOpacity="0.08" />
+            </linearGradient>
+            <linearGradient id="ddp-performance-network-fill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="var(--ddp-primary)" stopOpacity="0.36" />
+              <stop offset="1" stopColor="var(--ddp-primary)" stopOpacity="0.07" />
+            </linearGradient>
+          </defs>
+          {[0.33, 0.66].map((ratio) => (
+            <line
+              className="ddp-performance-chart-guide"
+              key={ratio}
+              x1={paddingX}
+              x2={width - paddingX}
+              y1={(paddingY + ratio * (height - paddingY * 2)).toFixed(1)}
+              y2={(paddingY + ratio * (height - paddingY * 2)).toFixed(1)}
+            />
+          ))}
+          <path className="ddp-performance-chart-server-area" d={serverArea} />
+          <path className="ddp-performance-chart-network-area" d={networkArea} />
+          <path className="ddp-performance-chart-server-line" d={serverLine} />
+          <path className="ddp-performance-chart-total-line" d={totalLine} />
+          {latestPoint && (
+            <circle
+              className="ddp-performance-chart-latest"
+              cx={latestPoint.x}
+              cy={latestPoint.y}
+              r="3.2"
+            >
+              <title>#{latestRecord.sequence} · {formatDuration(latestRecord.totalMs)}</title>
+            </circle>
+          )}
+        </svg>
+      ) : (
+        <div className="ddp-performance-chart-empty">{t("performanceNoSamples")}</div>
+      )}
+    </div>
+  );
+}
+
+function CallbackPerformanceSection({callbackId, t}) {
+  const {connected, performance} = useCallbackPerformance(callbackId);
+  const history = [...performance.history].reverse().slice(0, 20);
+  const transferTotal = performance.requestSize + performance.responseSize;
+  const supportingMetrics = [
+    [t("performanceExecutions"), String(performance.executionCount), "is-count"],
+    [t("performanceAverage"), formatDuration(performance.averageMs), "is-average"],
+    [t("performanceMaximum"), formatDuration(performance.maxMs), "is-maximum"],
+    [t("performanceMinimum"), formatDuration(performance.minMs), "is-minimum"],
+  ];
+
+  return (
+    <section className="ddp-detail-section ddp-performance-section" aria-label={t("performanceTitle")}>
+      <div className="ddp-detail-section-heading">
+        <div>
+          <span>{t("performanceEyebrow")}</span>
+          <h3>{t("performanceTitle")}</h3>
+        </div>
+        <span className={`ddp-performance-live ${connected ? "is-connected" : ""}`}>
+          <i aria-hidden="true" />
+          {t(connected ? "performanceLive" : "performanceWaiting")}
+        </span>
+      </div>
+
+      <div className="ddp-performance-console">
+        <div className="ddp-performance-primary">
+          <div className="ddp-performance-hero-label">
+            <span aria-hidden="true"><FieldTimeOutlined /></span>
+            <span>{t("performanceLatest")}</span>
+          </div>
+          <strong>{formatDuration(performance.latestMs)}</strong>
+          <div className="ddp-performance-hero-meta">
+            <span className={`ddp-performance-status is-${String(performance.latestStatus || "unknown").toLowerCase().replaceAll("_", "-")}`}>
+              {performance.executionCount
+                ? performanceStatusLabel(performance.latestStatus, t)
+                : t("performanceNotRun")}
+            </span>
+            <small>{performance.executionCount}{t("performanceRunsShort")}</small>
+          </div>
+        </div>
+        <div className="ddp-performance-stats">
+          {supportingMetrics.map(([label, value, className]) => (
+            <div className={className} key={label}>
+              <i aria-hidden="true" />
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="ddp-performance-analysis">
+        <PerformanceSparkline history={performance.history} t={t} />
+        <div className="ddp-performance-transfer">
+          <div className="ddp-performance-transfer-heading">
+            <span><SwapOutlined />{t("performanceTransfer")}</span>
+            <Tooltip title={t("performanceTransferHint")} placement="topRight">
+              <InfoCircleOutlined className="ddp-performance-transfer-info" />
+            </Tooltip>
+          </div>
+          <strong className="ddp-performance-transfer-total">{formatBytes(transferTotal)}</strong>
+          <div className="ddp-performance-transfer-breakdown">
+            <div>
+              <span><i className="is-request" />{t("performanceRequest")}</span>
+              <strong>{formatBytes(performance.requestSize)}</strong>
+            </div>
+            <div>
+              <span><i className="is-response" />{t("performanceResponse")}</span>
+              <strong>{formatBytes(performance.responseSize)}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="ddp-performance-history-heading">
+        <div>
+          <HistoryOutlined aria-hidden="true" />
+          <span>{t("performanceHistory")}</span>
+        </div>
+        {(performance.discardedCount > 0 || performance.unobservedCount > 0) && (
+          <small>
+            {t("performanceOmitted").replace(
+              "{count}",
+              String(performance.discardedCount + performance.unobservedCount),
+            )}
+          </small>
+        )}
+      </div>
+
+      {history.length ? (
+        <div className="ddp-performance-history-scroll">
+          <table className="ddp-performance-history-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{t("performanceCompleted")}</th>
+                <th>{t("performanceStatus")}</th>
+                <th>{t("performanceTotal")}</th>
+                <th>{t("performanceServer")}</th>
+                <th>{t("performanceNetwork")}</th>
+                <th>{t("performanceRequest")}</th>
+                <th>{t("performanceResponse")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((record) => (
+                <tr key={record.sequence}>
+                  <td>{record.sequence}</td>
+                  <td>{new Date(record.completedAt).toLocaleTimeString()}</td>
+                  <td>
+                    <span className={`ddp-performance-status is-${String(record.status || "unknown").toLowerCase().replaceAll("_", "-")}`}>
+                      {performanceStatusLabel(record.status, t)}
+                    </span>
+                  </td>
+                  <td><strong>{formatDuration(record.totalMs)}</strong></td>
+                  <td>{formatDuration(record.serverMs)}</td>
+                  <td>{formatDuration(record.networkMs)}</td>
+                  <td>{formatBytes(record.requestSize)}</td>
+                  <td>{formatBytes(record.responseSize)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="ddp-performance-history-empty">
+          <ThunderboltOutlined aria-hidden="true" />
+          <strong>{t("performanceNoHistory")}</strong>
+          <span>{t("performanceNoHistoryHint")}</span>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function DetailDependencyGroup({kind, title, items, empty}) {
   return (
     <div className={`ddp-detail-dependency-group is-${kind}`}>
@@ -259,8 +602,12 @@ function NoOutputTerminal({t}) {
   );
 }
 
-function CallbackDetailModal({row, open, onClose, onAfterClose, t}) {
+function CallbackDetailModal({row, ...props}) {
   if (!row) return null;
+  return <CallbackDetailModalContent row={row} {...props} />;
+}
+
+function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
 
   const callbackName = row.mode === "client"
     ? t("clientsideCallback")
@@ -332,7 +679,7 @@ function CallbackDetailModal({row, open, onClose, onAfterClose, t}) {
       afterClose={onAfterClose}
       footer={null}
       centered
-      width="min(1020px, calc(100vw - 32px))"
+      width="min(1120px, calc(100vw - 32px))"
       zIndex={100010}
       destroyOnHidden
       title={(
@@ -502,6 +849,8 @@ function CallbackDetailModal({row, open, onClose, onAfterClose, t}) {
           </div>
         )}
       </section>
+
+      <CallbackPerformanceSection callbackId={row.callbackId} t={t} />
     </Modal>
   );
 }
@@ -513,8 +862,12 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("all");
   const [visibility, setVisibility] = useState("all");
+  const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(() =>
+    readCallbackPerformanceColumns(window.localStorage),
+  );
   const [selectedCallback, setSelectedCallback] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const performanceSnapshot = useCallbackPerformanceSnapshot();
   const selectStyles = useMemo(
     () => ({popup: {root: {"--ddp-primary": accentColor}}}),
     [accentColor],
@@ -548,9 +901,33 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
     setDetailOpen(true);
   };
 
+  const updatePerformanceMetricsVisibility = (visible) => {
+    setShowPerformanceMetrics(visible);
+    writeCallbackPerformanceColumns(window.localStorage, visible);
+  };
+
+  const rowsWithPerformance = useMemo(
+    () => rows.map((row) => ({
+      ...row,
+      performance: performanceSnapshot.getCallback(row.callbackId),
+    })),
+    [rows, performanceSnapshot.revision],
+  );
+  const hasExecutionTimes = rowsWithPerformance.some(
+    (row) => Number.isFinite(row.performance.lastExecutedAt),
+  );
+  const [relativeNow, setRelativeNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!isActive || !hasExecutionTimes) return undefined;
+    setRelativeNow(Date.now());
+    const timer = window.setInterval(() => setRelativeNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [isActive, hasExecutionTimes]);
+
   const filteredRows = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return rows.filter((row) => {
+    return rowsWithPerformance.filter((row) => {
       const matchesMode = mode === "all" || row.mode === mode;
       const matchesVisibility =
         visibility === "all" ||
@@ -558,7 +935,7 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
       const haystack = `${row.outputText} ${row.inputText} ${row.stateText} ${row.sourceText} ${row.mode}`.toLowerCase();
       return matchesMode && matchesVisibility && (!needle || haystack.includes(needle));
     });
-  }, [rows, query, mode, visibility]);
+  }, [rowsWithPerformance, query, mode, visibility]);
   const visibleCountLabel = filteredRows.length === 1
     ? t("visibleCountOne")
     : t("visibleCount");
@@ -566,6 +943,8 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
   const columns = [
     {
       title: t("columnMode"), dataIndex: "mode", key: "mode", width: 132,
+      fixed: "left",
+      className: "ddp-identity-cell is-mode",
       sorter: (left, right) => left.mode.localeCompare(right.mode),
       render: (value, row) => (
         <Space size={6}>
@@ -582,8 +961,93 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
     },
     {
       title: t("columnSource"), dataIndex: "sourceText", key: "source", width: 230,
+      fixed: "left",
+      className: "ddp-identity-cell is-source",
       render: (_value, row) => <SourceLocation row={row} t={t} />,
     },
+    ...(showPerformanceMetrics ? [{
+      title: t("columnLastExecution"),
+      dataIndex: ["performance", "lastExecutedAt"],
+      key: "last-execution",
+      width: 194,
+      className: "ddp-performance-column is-last-execution",
+      sorter: (left, right) => comparePerformanceValues(
+        left.performance.lastExecutedAt,
+        right.performance.lastExecutedAt,
+      ),
+      sortDirections: ["descend", "ascend"],
+      render: (_value, row) => (
+        <LastExecutionCell
+          connected={performanceSnapshot.connected}
+          completedAt={row.performance.lastExecutedAt}
+          currentTime={relativeNow}
+          t={t}
+        />
+      ),
+    },
+    {
+      title: t("performanceExecutions"),
+      dataIndex: ["performance", "executionCount"],
+      key: "performance-executions",
+      width: 110,
+      align: "right",
+      className: "ddp-performance-column",
+      sorter: (left, right) => comparePerformanceValues(
+        left.performance.executionCount,
+        right.performance.executionCount,
+      ),
+      sortDirections: ["descend", "ascend"],
+      render: (_value, row) => (
+        <PerformanceMetricCell
+          connected={performanceSnapshot.connected}
+          metric="executionCount"
+          performance={row.performance}
+          t={t}
+        />
+      ),
+    },
+    {
+      title: t("performanceAverage"),
+      dataIndex: ["performance", "averageMs"],
+      key: "performance-average",
+      width: 118,
+      align: "right",
+      className: "ddp-performance-column",
+      sorter: (left, right) => comparePerformanceValues(
+        left.performance.averageMs,
+        right.performance.averageMs,
+      ),
+      sortDirections: ["descend", "ascend"],
+      render: (_value, row) => (
+        <PerformanceMetricCell
+          connected={performanceSnapshot.connected}
+          metric="averageMs"
+          performance={row.performance}
+          t={t}
+        />
+      ),
+    },
+    {
+      title: t("performanceLatest"),
+      dataIndex: ["performance", "latestMs"],
+      key: "performance-latest",
+      width: 118,
+      align: "right",
+      className: "ddp-performance-column",
+      sorter: (left, right) => comparePerformanceValues(
+        left.performance.latestMs,
+        right.performance.latestMs,
+      ),
+      sortDirections: ["descend", "ascend"],
+      render: (_value, row) => (
+        <PerformanceMetricCell
+          connected={performanceSnapshot.connected}
+          metric="latestMs"
+          performance={row.performance}
+          t={t}
+        />
+      ),
+    }] : []),
     {
       title: t("columnOutput"), dataIndex: "outputs", key: "output", width: 218,
       render: (items, row) => row.noOutput ? (
@@ -693,6 +1157,19 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
             {value: "hidden", label: t("hidden")},
           ]}
         />
+        <label
+          className={`ddp-performance-columns-toggle ${showPerformanceMetrics ? "is-active" : ""}`}
+          title={t("showPerformanceMetrics")}
+        >
+          <LineChartOutlined className="ddp-performance-columns-toggle-icon" aria-hidden="true" />
+          <span>{t("columnPerformance")}</span>
+          <Switch
+            size="small"
+            checked={showPerformanceMetrics}
+            onChange={updatePerformanceMetricsVisibility}
+            aria-label={t("showPerformanceMetrics")}
+          />
+        </label>
       </div>
 
       {error && (
@@ -714,7 +1191,7 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
           rowKey="key"
           size="small"
           tableLayout="fixed"
-          scroll={{x: 1350}}
+          scroll={{x: showPerformanceMetrics ? 1890 : 1350}}
           locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("emptyCallbacks")} />}}
           pagination={{
             pageSize: PAGE_SIZE,

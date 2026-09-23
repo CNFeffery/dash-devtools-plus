@@ -192,6 +192,8 @@ def test_callback_metadata_includes_relative_python_source_locations():
     no_output_callbacks = [item for item in callbacks if item.get("no_output")]
     assert len(no_output_callbacks) >= 2
     assert all(item["output"] is None for item in no_output_callbacks)
+    assert all(item["callback_id"] for item in no_output_callbacks)
+    assert all(item["callback_id"] != item["output"] for item in no_output_callbacks)
     assert {item["source"]["function"] for item in no_output_callbacks} >= {
         "record_run_side_effect",
         "observe_match_without_output",
