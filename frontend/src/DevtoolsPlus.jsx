@@ -210,8 +210,11 @@ function EnabledDevtoolsPlus({
         <div className="ddp-content">
           <Tabs
             className={`ddp-main-tabs ${usesInternalTabScroll(activeTab) ? "has-pane-scroll" : ""}`}
+            classNames={{popup: {root: "ddp-main-tabs-overflow"}}}
+            styles={{popup: {root: {zIndex: 100025}}}}
             activeKey={activeTab}
             onChange={setActiveTab}
+            more={{trigger: "hover"}}
             animated={false}
             destroyOnHidden={false}
             items={[
