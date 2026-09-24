@@ -1,4 +1,6 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import {Chart} from "@antv/g2";
+import {createLiveLegendChart} from "./liveLegendChart";
 import {Alert, Button, Dropdown, Empty, Input, Modal, Popover, Select, Space, Switch, Table, Tag, Tooltip} from "antd";
 import {
   ApiOutlined,
@@ -313,7 +315,7 @@ function formatExecutionRecency(completedAt, currentTime, t) {
   return t("lastExecutionOverTenMinutesAgo");
 }
 
-function LastExecutionCell({connected, completedAt, currentTime, t}) {
+function LastExecutionCell({connected, completedAt, executionCount, currentTime, t}) {
   if (!connected) {
     return (
       <span className="ddp-performance-empty">
@@ -323,7 +325,11 @@ function LastExecutionCell({connected, completedAt, currentTime, t}) {
     );
   }
   if (!Number.isFinite(completedAt)) {
-    return <span className="ddp-performance-empty">{t("performanceNotRun")}</span>;
+    return (
+      <span className="ddp-performance-empty">
+        {t(executionCount > 0 ? "performanceTimeUnavailable" : "performanceNotRun")}
+      </span>
+    );
   }
 
   const absoluteTime = formatLocalExecutionTime(completedAt);
@@ -339,49 +345,78 @@ function LastExecutionCell({connected, completedAt, currentTime, t}) {
   );
 }
 
+const PERFORMANCE_PHASES = ["server", "network"];
+
 function PerformanceSparkline({history, t}) {
-  const records = history
+  const containerRef = useRef(null);
+  const controllerRef = useRef(null);
+  const selectedPhasesRef = useRef(null);
+  const records = useMemo(() => history
     .filter((record) => record.measurementAvailable)
-    .slice(-30);
-  const plottedRecords = records.length === 1 ? [records[0], records[0]] : records;
-  const width = 420;
-  const height = 82;
-  const paddingX = 6;
-  const paddingY = 6;
-  const baseline = height - paddingY;
-  const maximum = records.length
-    ? Math.max(...records.map((record) => record.totalMs)) * 1.12
-    : 1;
-  const pointFor = (value, index) => {
-    const x = paddingX + (index / Math.max(1, plottedRecords.length - 1)) * (width - paddingX * 2);
-    const y = baseline - (Math.max(0, value) / Math.max(1, maximum)) * (height - paddingY * 2);
-    return {x, y};
-  };
-  const totalPoints = plottedRecords.map((record, index) => pointFor(record.totalMs, index));
-  const serverPoints = plottedRecords.map((record, index) => pointFor(
-    Math.min(record.totalMs, Math.max(0, Number(record.serverMs) || 0)),
-    index,
-  ));
-  const curvePath = (points) => {
-    if (!points.length) return "";
-    return points.slice(1).reduce((path, point, index) => {
-      const previous = points[index];
-      const middleX = previous.x + (point.x - previous.x) / 2;
-      return `${path} C ${middleX.toFixed(1)},${previous.y.toFixed(1)} ${middleX.toFixed(1)},${point.y.toFixed(1)} ${point.x.toFixed(1)},${point.y.toFixed(1)}`;
-    }, `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`);
-  };
-  const curveCommands = (points) => curvePath(points).replace(/^M [^C]+/, "");
-  const totalLine = curvePath(totalPoints);
-  const serverLine = curvePath(serverPoints);
-  const serverArea = serverPoints.length
-    ? `M ${serverPoints[0].x.toFixed(1)},${baseline} L ${serverPoints[0].x.toFixed(1)},${serverPoints[0].y.toFixed(1)} ${curveCommands(serverPoints)} L ${serverPoints.at(-1).x.toFixed(1)},${baseline} Z`
-    : "";
-  const reversedServerPoints = [...serverPoints].reverse();
-  const networkArea = totalPoints.length
-    ? `${totalLine} L ${reversedServerPoints[0].x.toFixed(1)},${reversedServerPoints[0].y.toFixed(1)} ${curveCommands(reversedServerPoints)} Z`
-    : "";
-  const latestPoint = totalPoints.at(-1);
-  const latestRecord = records.at(-1);
+    .slice(-30), [history]);
+  const chartData = useMemo(() => records.flatMap((record, index) => {
+    const total = Math.max(0, Number(record.totalMs) || 0);
+    const server = Math.min(total, Math.max(0, Number(record.serverMs) || 0));
+    return [
+      {sample: String(index + 1), duration: server, phase: "server"},
+      {sample: String(index + 1), duration: total - server, phase: "network"},
+    ];
+  }), [records]);
+
+  useEffect(() => {
+    if (!containerRef.current) return undefined;
+    const chart = new Chart({container: containerRef.current, autoFit: true, height: 120});
+    chart.options({
+      type: "view",
+      autoFit: true,
+      data: chartData,
+      paddingLeft: 7,
+      paddingRight: 7,
+      paddingTop: 28,
+      paddingBottom: 5,
+      encode: {x: "sample", y: "duration", color: "phase"},
+      scale: {
+        x: {padding: 0.68},
+        y: {nice: true},
+        color: {
+          domain: PERFORMANCE_PHASES,
+          range: ["#36a986", "#119dff"],
+        },
+      },
+      axis: {x: false, y: false},
+      legend: {color: {
+        position: "top",
+        layout: {justifyContent: "flex-end"},
+        labelFormatter: (phase) => phase === "server" ? t("performanceServer") : t("performanceNetwork"),
+        defaultSelect: selectedPhasesRef.current ?? undefined,
+      }},
+      interaction: {tooltip: {shared: true}, legendFilter: true},
+      animate: false,
+      children: [
+        {
+          type: "interval",
+          transform: [{type: "dodgeX", padding: 0}],
+          style: {
+            fillOpacity: 0.9,
+            radiusTopLeft: 2,
+            radiusTopRight: 2,
+          },
+        },
+      ],
+    });
+    const controller = createLiveLegendChart(chart, PERFORMANCE_PHASES, chartData, selectedPhasesRef);
+    controllerRef.current = controller;
+    return () => {
+      controller.destroy();
+      controllerRef.current = null;
+    };
+  }, [records.length > 0, t]);
+
+  useEffect(() => {
+    controllerRef.current?.update(chartData).catch((error) => {
+      console.warn("[dash-devtools-plus] Callback performance chart render failed", error);
+    });
+  }, [chartData, records, t]);
 
   return (
     <div className="ddp-performance-chart">
@@ -389,47 +424,10 @@ function PerformanceSparkline({history, t}) {
         <span className="ddp-performance-chart-title"><LineChartOutlined />{t("performanceTrend")}</span>
         <div className="ddp-performance-chart-meta">
           <small>{t("performanceRecentSamples").replace("{count}", String(records.length))}</small>
-          <span className="ddp-performance-chart-legend is-server"><i />{t("performanceServer")}</span>
-          <span className="ddp-performance-chart-legend is-network"><i />{t("performanceNetwork")}</span>
         </div>
       </div>
       {records.length ? (
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={t("performanceTrend")}>
-          <defs>
-            <linearGradient id="ddp-performance-server-fill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="#36a986" stopOpacity="0.42" />
-              <stop offset="1" stopColor="#36a986" stopOpacity="0.08" />
-            </linearGradient>
-            <linearGradient id="ddp-performance-network-fill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="var(--ddp-primary)" stopOpacity="0.36" />
-              <stop offset="1" stopColor="var(--ddp-primary)" stopOpacity="0.07" />
-            </linearGradient>
-          </defs>
-          {[0.33, 0.66].map((ratio) => (
-            <line
-              className="ddp-performance-chart-guide"
-              key={ratio}
-              x1={paddingX}
-              x2={width - paddingX}
-              y1={(paddingY + ratio * (height - paddingY * 2)).toFixed(1)}
-              y2={(paddingY + ratio * (height - paddingY * 2)).toFixed(1)}
-            />
-          ))}
-          <path className="ddp-performance-chart-server-area" d={serverArea} />
-          <path className="ddp-performance-chart-network-area" d={networkArea} />
-          <path className="ddp-performance-chart-server-line" d={serverLine} />
-          <path className="ddp-performance-chart-total-line" d={totalLine} />
-          {latestPoint && (
-            <circle
-              className="ddp-performance-chart-latest"
-              cx={latestPoint.x}
-              cy={latestPoint.y}
-              r="3.2"
-            >
-              <title>#{latestRecord.sequence} · {formatDuration(latestRecord.totalMs)}</title>
-            </circle>
-          )}
-        </svg>
+        <div ref={containerRef} className="ddp-performance-chart-canvas" aria-label={t("performanceTrend")} />
       ) : (
         <div className="ddp-performance-chart-empty">{t("performanceNoSamples")}</div>
       )}
@@ -980,6 +978,7 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
         <LastExecutionCell
           connected={performanceSnapshot.connected}
           completedAt={row.performance.lastExecutedAt}
+          executionCount={row.performance.executionCount}
           currentTime={relativeNow}
           t={t}
         />

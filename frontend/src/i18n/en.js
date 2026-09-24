@@ -129,6 +129,7 @@ export default {
   performanceLive: "Page session live",
   performanceWaiting: "Waiting for Dash profile",
   performanceNotRun: "Not run yet",
+  performanceTimeUnavailable: "Time unavailable",
   lastExecutionSecondsAgo: "{seconds}s ago",
   lastExecutionMinutesAgo: "{minutes}m {seconds}s ago",
   lastExecutionOverTenMinutesAgo: "More than 10 min ago",

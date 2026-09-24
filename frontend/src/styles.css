@@ -1852,7 +1852,7 @@
   border: 1px solid var(--ddp-line-soft);
   border-radius: 11px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.32fr);
+  grid-template-columns: minmax(0, 1.6fr) minmax(255px, 1fr);
   margin-top: 8px;
   overflow: hidden;
 }
@@ -1896,25 +1896,6 @@
   gap: 8px;
 }
 
-.ddp-performance-chart-legend {
-  align-items: center;
-  color: var(--ddp-muted);
-  display: inline-flex;
-  font-size: 9px;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.ddp-performance-chart-legend > i {
-  background: var(--ddp-primary);
-  border-radius: 2px;
-  display: inline-block;
-  height: 7px;
-  width: 7px;
-}
-
-.ddp-performance-chart-legend.is-server > i {background: #36a986;}
-
 .ddp-performance-chart-label small {
   color: var(--ddp-muted);
   font-size: 9px;
@@ -1922,55 +1903,11 @@
   white-space: nowrap;
 }
 
-.ddp-performance-chart > svg {
-  display: block;
-  height: 72px;
+.ddp-performance-chart-canvas {
+  height: 120px;
   margin-top: 2px;
-  overflow: hidden;
+  min-width: 0;
   width: 100%;
-}
-
-.ddp-performance-chart-guide {
-  stroke: color-mix(in srgb, var(--ddp-line) 72%, transparent);
-  stroke-dasharray: 2 5;
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-.ddp-performance-chart-server-area {
-  fill: url(#ddp-performance-server-fill);
-  stroke: none;
-}
-
-.ddp-performance-chart-network-area {
-  fill: url(#ddp-performance-network-fill);
-  stroke: none;
-}
-
-.ddp-performance-chart-server-line,
-.ddp-performance-chart-total-line {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.ddp-performance-chart-server-line {
-  stroke: #36a986;
-  stroke-width: 1.35;
-}
-
-.ddp-performance-chart-total-line {
-  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--ddp-primary) 22%, transparent));
-  stroke: var(--ddp-primary);
-  stroke-width: 2;
-}
-
-.ddp-performance-chart-latest {
-  fill: var(--ddp-primary);
-  stroke: var(--ddp-panel-soft);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
 }
 
 .ddp-performance-chart-empty {
@@ -3966,39 +3903,6 @@
   color: #36a3a3;
   font-size: 19px;
   margin-top: 5px;
-}
-
-.ddp-chart-legend {
-  align-items: center;
-  border-bottom: 1px solid var(--ddp-line-soft);
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  min-height: 32px;
-  padding: 7px 2px 8px;
-}
-
-.ddp-chart-legend span {
-  align-items: center;
-  color: var(--ddp-muted);
-  display: inline-flex;
-  font-family: var(--ddp-font);
-  font-size: 10px;
-  gap: 5px;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-.ddp-chart-legend span::before {
-  background: #36a3a3;
-  border-radius: 999px;
-  content: "";
-  height: 6px;
-  width: 6px;
-}
-
-.ddp-chart-legend span.is-memory::before {
-  background: #78b884;
 }
 
 .ddp-resource-chart {

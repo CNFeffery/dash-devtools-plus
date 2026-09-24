@@ -12,9 +12,15 @@ import {
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import {endpointUrl} from "./utils";
+import {createLiveLegendChart, seriesGradient} from "./liveLegendChart";
 
 const SAMPLE_INTERVAL = 2000;
 const MAX_SAMPLES = 120;
+const METRIC_SERIES = ["cpu", "memory"];
+const METRIC_GRADIENTS = {
+  cpu: "l(270) 0:#e7f9f8 1:#48b8b8",
+  memory: "l(270) 0:#e9f7ed 1:#82c994",
+};
 
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Number(value) || 0));
@@ -65,26 +71,17 @@ function MetricCard({icon, label, value, percent, detail, color, className = ""}
 
 function TrendChart({history, t}) {
   const containerRef = useRef(null);
-  const chartRef = useRef(null);
+  const controllerRef = useRef(null);
+  const selectedMetricsRef = useRef(null);
 
   const chartData = useMemo(() => history.flatMap((sample) => [
-    {time: sample.time, value: sample.cpu, metric: t("cpuUsage")},
-    {time: sample.time, value: sample.memory, metric: t("memoryUsage")},
-  ]), [history, t]);
+    {time: sample.time, value: sample.cpu, metric: "cpu"},
+    {time: sample.time, value: sample.memory, metric: "memory"},
+  ]), [history]);
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
     const chart = new Chart({container: containerRef.current, autoFit: true, height: 248});
-    chartRef.current = chart;
-    return () => {
-      chart.destroy();
-      chartRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart || chartData.length === 0) return;
     chart.options({
       type: "view",
       data: chartData,
@@ -95,7 +92,7 @@ function TrendChart({history, t}) {
       scale: {
         y: {domain: [0, 100], tickCount: 5},
         color: {
-          domain: [t("cpuUsage"), t("memoryUsage")],
+          domain: ["cpu", "memory"],
           range: ["#36a3a3", "#78b884"],
         },
       },
@@ -103,24 +100,41 @@ function TrendChart({history, t}) {
         x: {title: false, labelAutoHide: true, tick: false},
         y: {title: false, labelFormatter: (value) => `${value}%`, grid: true},
       },
-      legend: false,
-      interaction: {tooltip: {shared: true}},
+      legend: {color: {
+        position: "top",
+        layout: {justifyContent: "flex-end"},
+        labelFormatter: (metric) => metric === "cpu" ? t("cpuUsage") : t("memoryUsage"),
+        defaultSelect: selectedMetricsRef.current ?? undefined,
+      }},
+      interaction: {tooltip: {shared: true}, legendFilter: true},
       children: [
         {
           type: "area",
           encode: {x: "time", y: "value", color: "metric", shape: "smooth"},
-          style: {fillOpacity: 0.1},
-          animate: {enter: {type: "fadeIn", duration: 260}, update: {type: "morphing", duration: 360}},
+          style: {
+            fill: (datum) => seriesGradient(datum, "metric", METRIC_GRADIENTS),
+            fillOpacity: 0.72,
+          },
+          animate: false,
         },
         {
           type: "line",
           encode: {x: "time", y: "value", color: "metric", shape: "smooth"},
           style: {lineWidth: 2.4},
-          animate: {enter: {type: "fadeIn", duration: 260}, update: {type: "morphing", duration: 360}},
+          animate: false,
         },
       ],
     });
-    chart.render().catch((error) => {
+    const controller = createLiveLegendChart(chart, METRIC_SERIES, chartData, selectedMetricsRef);
+    controllerRef.current = controller;
+    return () => {
+      controller.destroy();
+      controllerRef.current = null;
+    };
+  }, [t]);
+
+  useEffect(() => {
+    controllerRef.current?.update(chartData).catch((error) => {
       console.warn("[dash-devtools-plus] Metrics chart render failed", error);
     });
   }, [chartData, t]);
@@ -271,10 +285,6 @@ export default function ServerMetricsPanel({monitor, t}) {
               <div className="ddp-resource-card-heading">
                 <div><span>{t("liveTrend")}</span><h3>{t("resourceTrend")}</h3></div>
                 <small className="ddp-chart-sample-count">{history.length} {t("samples")}</small>
-              </div>
-              <div className="ddp-chart-legend" aria-hidden="true">
-                <span className="is-cpu">{t("cpuUsage")}</span>
-                <span className="is-memory">{t("memoryUsage")}</span>
               </div>
               <TrendChart history={history} t={t} />
             </article>

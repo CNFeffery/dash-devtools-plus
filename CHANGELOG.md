@@ -5,8 +5,10 @@ All notable changes to this project are documented in this file.
 ## [0.1.4] - Unreleased
 
 - Added live, page-scoped callback performance tracking with sortable metrics, execution history, transfer sizes, and saved column visibility.
-- Redesigned the callback table and details view with a compact timing chart and clearer layout.
+- Redesigned the callback table and details view with a compact AntV grouped-column timing chart and clearer layout.
+- Added AntV resource and callback timing charts with interactive legends whose series selections persist across live data updates without flashing hidden series.
 - Fixed the narrow-screen tab menu and nested scrolling in the runtime dependency list.
+- Fixed callback metrics missed when the monitor attaches after initial executions or recovers from a missed store notification.
 
 ## [0.1.3] - 2026-09-18
 

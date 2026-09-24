@@ -198,14 +198,14 @@ export function createCallbackPerformanceMonitor({
     listeners.forEach((listener) => listener());
   };
 
-  const processStore = (store) => {
+  const processStore = (store, scanAll = false) => {
     if (store !== activeStore) return;
     const profile = store.getState()?.profile;
     if (!profile?.callbacks) return;
 
-    const candidateIds = profile.updated?.length
-      ? profile.updated
-      : Object.keys(profile.callbacks);
+    const candidateIds = scanAll || !profile.updated?.length
+      ? Object.keys(profile.callbacks)
+      : profile.updated;
     let changed = false;
 
     for (const callbackId of candidateIds) {
@@ -242,7 +242,7 @@ export function createCallbackPerformanceMonitor({
       publicSnapshot = {...publicSnapshot, connected: true};
     }
     store.subscribe(() => processStore(store));
-    processStore(store);
+    processStore(store, true);
     publish();
   };
 
@@ -275,7 +275,7 @@ export function createCallbackPerformanceMonitor({
   return {
     install,
     refresh() {
-      if (activeStore) processStore(activeStore);
+      if (activeStore) processStore(activeStore, true);
     },
     subscribe(listener) {
       listeners.add(listener);

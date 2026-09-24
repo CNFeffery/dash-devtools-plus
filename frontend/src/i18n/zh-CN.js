@@ -129,6 +129,7 @@ export default {
   performanceLive: "当前页面持续记录中",
   performanceWaiting: "等待 Dash 性能数据",
   performanceNotRun: "尚未执行",
+  performanceTimeUnavailable: "执行时间不可用",
   lastExecutionSecondsAgo: "{seconds}秒前",
   lastExecutionMinutesAgo: "{minutes}分{seconds}秒前",
   lastExecutionOverTenMinutesAgo: "大于10分钟前",

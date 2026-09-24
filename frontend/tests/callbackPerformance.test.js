@@ -180,6 +180,48 @@ test("monitor refresh captures polling callbacks when a store notification is mi
   assert.equal(performance.history[0].completedAt, 5_000);
 });
 
+test("monitor scans every existing callback when it attaches to a populated store", () => {
+  const store = createStore({
+    profile: {
+      callbacks: {
+        "first.children": callbackProfile({
+          count: 1, total: 20, server: 12, network: 8, upload: 5, download: 10,
+        }),
+        "second.children": callbackProfile({
+          count: 1, total: 30, server: 18, network: 12, upload: 6, download: 11,
+        }),
+      },
+      updated: ["second.children"],
+    },
+  });
+  const monitor = createCallbackPerformanceMonitor({now: () => 5_000});
+  monitor.install({dash_stores: [store]});
+
+  assert.equal(monitor.getCallback("first.children").executionCount, 1);
+  assert.equal(monitor.getCallback("second.children").executionCount, 1);
+});
+
+test("fallback refresh finds callbacks beyond the last updated identifier", () => {
+  const store = createStore();
+  const monitor = createCallbackPerformanceMonitor({now: () => 5_000});
+  monitor.install({dash_stores: [store]});
+  store.replace({
+    callbacks: {
+      "first.children": callbackProfile({
+        count: 1, total: 20, server: 12, network: 8, upload: 5, download: 10,
+      }),
+      "second.children": callbackProfile({
+        count: 1, total: 30, server: 18, network: 12, upload: 6, download: 11,
+      }),
+    },
+    updated: ["second.children"],
+  });
+  monitor.refresh();
+
+  assert.equal(monitor.getCallback("first.children").executionCount, 1);
+  assert.equal(monitor.getCallback("second.children").executionCount, 1);
+});
+
 test("monitor records no-response attempts without corrupting timing aggregates", () => {
   const monitor = createCallbackPerformanceMonitor({now: () => 4_000});
   const store = createStore();

@@ -18,7 +18,6 @@ Use **Show performance metrics** to display or hide Last execution, Executions, 
 | --- | --- |
 | Callback type | Server-side or clientside registration. |
 | Source location | Project-relative Python source and an editor action when a supported local editor is available. |
-| Last execution | Local absolute time plus a live relative time, with execution-time sorting. |
 | Last execution / Executions / Average / Latest | Callback execution metrics for the current page lifecycle; shown or hidden together from the toolbar. |
 | Output / Input / State roles | The registered dependency roles, including multiple values. |
 | Docstring | The Python function documentation when it is available. |
@@ -30,17 +29,19 @@ Last execution, execution count, average duration, and latest duration are separ
 
 ## ⚡ Callback performance
 
-The performance workspace sits at the bottom of callback details as a compact, integrated instrumentation console. Latest duration is the primary reading, execution statistics share one continuous metric panel, and the smooth stacked area chart and transfer summary share a low-padding analysis panel. Empty states stay compact instead of reserving a large blank region. It covers the current browser page lifecycle and includes:
+![Live callback performance details in v0.1.4](../../../imgs/docs/callback-performance.webp)
+
+The performance workspace sits at the bottom of callback details as a compact, integrated instrumentation console. Latest duration is the primary reading, execution statistics share one continuous metric panel, and the grouped server/network column chart and transfer summary share a low-padding analysis panel. Click Server or Network in the chart's interactive AntV legend to show or hide that series; the selection stays in place as new executions arrive. Empty states stay compact instead of reserving a large blank region. It covers the current browser page lifecycle and includes:
 
 - execution count, average duration, latest duration, minimum, and maximum;
-- a stacked server/network duration trend for the latest 30 executions and the latest 20 detailed records;
+- a grouped server/network duration column chart for the latest 30 executions and the latest 20 detailed records;
 - total, server, and network duration per recorded execution;
 - cumulative request and response payload sizes; and
 - completion status, including successful, no-update, no-response, and clientside-error outcomes.
 
 Dash DevTools Plus derives these values from Dash Renderer’s built-in callback profile. It observes the renderer store and calculates each execution by differencing Dash’s cumulative counters; it does not wrap or re-run application callbacks and adds no server-side callback state. While callback details are open, a 500 ms fallback refresh also reads the latest profile so polling callbacks continue updating the metrics, chart, and history without user interaction. Up to 200 detailed records are retained per callback, while lifecycle aggregates continue to cover every observed measured execution.
 
-The history is intentionally session-local: a full page reload clears it. Payload sizes represent the request body and the response `Content-Length` exposed by Dash; missing response lengths are reported as zero by the renderer. Clientside callbacks have timing data but no network transfer, while executions for which Dash reports no response remain in history without fabricated duration values. WebSocket callback profiling depends on the metrics exposed by the active Dash Renderer version.
+The history is intentionally session-local: a full page reload clears it. When the monitor attaches after multiple executions, Dash's aggregate count and average remain available, but their individual completion times cannot be reconstructed. Payload sizes represent the request body and the response `Content-Length` exposed by Dash; missing response lengths are reported as zero by the renderer. Clientside callbacks have timing data but no network transfer, while executions for which Dash reports no response remain in history without fabricated duration values. WebSocket callback profiling depends on the metrics exposed by the active Dash Renderer version.
 
 ## 🛡️ Scope and safety
 
