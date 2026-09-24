@@ -4,11 +4,14 @@ All notable changes to this project are documented in this file.
 
 ## [0.1.4] - Unreleased
 
-- Added live, page-scoped callback performance tracking with sortable metrics, execution history, transfer sizes, and saved column visibility.
-- Redesigned the callback table and details view with a compact AntV grouped-column timing chart and clearer layout.
-- Added AntV resource and callback timing charts with interactive legends whose series selections persist across live data updates without flashing hidden series.
-- Fixed the narrow-screen tab menu and nested scrolling in the runtime dependency list.
-- Fixed callback metrics missed when the monitor attaches after initial executions or recovers from a missed store notification.
+### Added
+
+- Added performance monitoring to the Callback Relationships workspace, including live execution metrics, timing trends, transfer statistics, and execution history.
+
+### Changed
+
+- Improved the callback relationship table for clearer information hierarchy, readability, and interaction.
+- Improved visualization charts across related feature workspaces with refined AntV charts, interactive legends, and stable live data updates.
 
 ## [0.1.3] - 2026-09-18
 
