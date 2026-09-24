@@ -10,8 +10,8 @@ The server workspace gives a compact, live view of the process host while you de
 
 | Area | Information |
 | --- | --- |
-| Resource cards | Current CPU, memory, and system-disk usage. |
-| Live trend | Recent CPU and memory samples in gradient-filled AntV areas, refreshed every two seconds while the panel is active. Click either series in the interactive legend to filter it; the selection stays in place as new samples arrive. |
+| Resource cards | Current CPU, memory, and system-disk usage, with logical-core/frequency, used/total memory, and available-disk context. |
+| Live trend | Up to 120 recent CPU and memory samples in gradient-filled AntV areas, refreshed every two seconds throughout the debug page session (about four minutes of history). Click either series in the interactive legend to filter it; the selection stays in place as new samples arrive. |
 | Hardware & runtime | Hostname, operating system, architecture, processor, physical/logical cores, Python version, and uptime. |
 
 Use the refresh action when you need an immediate sample. Telemetry is served only to an explicitly debug-enabled Devtools Plus session; it is not a production monitoring system.

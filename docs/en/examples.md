@@ -11,6 +11,6 @@ The repository includes four runnable applications. Each calls `configure_devtoo
 
 All four use port `8050` by default. Run one application at a time, then open <http://127.0.0.1:8050>. Pick the size that matches the question you want to explore, then let Devtools Plus reveal the moving parts. ✨
 
-The comprehensive example deliberately contains native error-test controls, background and WebSocket registration shapes, and 100+ callbacks. Use it for acceptance checks; do not copy its intentionally broad topology wholesale into a production app.
+The comprehensive example deliberately contains native error-test controls, background and WebSocket registration shapes, and 131 callbacks in the current release. Use it for acceptance checks; do not copy its intentionally broad topology wholesale into a production app.
 
 ![The comprehensive callback laboratory](../../imgs/docs/comprehensive-example.webp)
