@@ -6,11 +6,12 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
-- Added performance monitoring to the Callback Relationships workspace, including live execution metrics, timing trends, transfer statistics, and execution history.
+- Added callback performance monitoring with live metrics, timing trends, and execution history.
 
 ### Changed
 
 - Improved the callback relationship table for clearer information hierarchy, readability, and interaction.
+- Refined callback details for a clearer, more polished viewing experience.
 - Improved visualization charts across related feature workspaces with refined AntV charts, interactive legends, and stable live data updates.
 
 ## [0.1.3] - 2026-09-18
