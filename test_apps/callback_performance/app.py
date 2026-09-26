@@ -53,4 +53,6 @@ app.clientside_callback(
 )
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False, dev_tools_disable_version_check=True, port=8057)
+    app.run(
+        debug=True, use_reloader=False, dev_tools_disable_version_check=True, port=8057
+    )

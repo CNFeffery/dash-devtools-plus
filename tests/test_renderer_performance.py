@@ -13,10 +13,7 @@ def test_installed_renderer_performance_contract():
     if not node:
         pytest.skip("Node.js is required for the Renderer integration test")
     renderer = (
-        Path(dash.__file__).parent
-        / "dash-renderer"
-        / "build"
-        / "dash_renderer.dev.js"
+        Path(dash.__file__).parent / "dash-renderer" / "build" / "dash_renderer.dev.js"
     )
     root = Path(__file__).resolve().parents[1]
     result = subprocess.run(
