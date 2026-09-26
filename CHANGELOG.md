@@ -12,7 +12,7 @@ All notable changes to this project are documented in this file.
 
 - Improved the callback relationship table for clearer information hierarchy, readability, and interaction.
 - Refined callback details for a clearer, more polished viewing experience.
-- Improved visualization charts across related feature workspaces with refined AntV charts, interactive legends, and stable live data updates.
+- Improved chart presentation, interaction, and live data updates across related feature workspaces.
 
 ## [0.1.3] - 2026-09-18
 
