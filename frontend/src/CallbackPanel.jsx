@@ -15,6 +15,8 @@ import {
   FieldTimeOutlined,
   FileTextOutlined,
   FilterOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
   HistoryOutlined,
   ImportOutlined,
   InfoCircleOutlined,
@@ -330,7 +332,7 @@ function LastExecutionCell({connected, completedAt, executionCount, currentTime,
 
 function DetailDependencyGroup({kind, title, items, empty}) {
   return (
-    <div className={`ddp-detail-dependency-group is-${kind}`}>
+    <div className={`ddp-detail-dependency-group is-${kind} ${items.length ? "" : "is-empty"}`}>
       <div className="ddp-detail-dependency-heading">
         <span><i aria-hidden="true">{ROLE_ICONS[kind]}</i>{title}</span>
         <b>{items.length}</b>
@@ -339,12 +341,31 @@ function DetailDependencyGroup({kind, title, items, empty}) {
         {items.length ? items.map((item, itemIndex) => (
           <div className="ddp-detail-dependency" key={`${kind}-${item}-${itemIndex}`}>
             <i>{String(itemIndex + 1).padStart(2, "0")}</i>
-            <code title={item}>{item}</code>
+            <code title={item}>{item.includes(".") ? <>{item.slice(0, item.lastIndexOf("."))}<span>{item.slice(item.lastIndexOf("."))}</span></> : item}</code>
           </div>
         )) : <span className="ddp-detail-empty">{empty}</span>}
       </div>
     </div>
   );
+}
+
+function CurvedFlowLink({merge = false}) {
+  const paths = merge
+    ? ["M 0 25 C 48 25 24 50 68 50 L 100 50", "M 0 75 C 48 75 24 50 68 50 L 100 50"]
+    : ["M 0 50 L 100 50"];
+  const verticalPath = merge
+    ? "M 50 0 C 50 28 62 30 62 50 S 50 72 50 100"
+    : "M 50 0 L 50 100";
+  return <div className={`ddp-detail-flow-link ${merge ? "is-merge" : "is-output"}`} aria-hidden="true">
+    <svg className="ddp-flow-horizontal" viewBox="0 0 100 100" preserveAspectRatio="none">
+      {paths.map((path, index) => <g key={path} className={index ? "is-state" : ""}>
+        <path className="ddp-flow-track" d={path} vectorEffect="non-scaling-stroke" />
+      </g>)}
+    </svg>
+    <svg className="ddp-flow-vertical" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path className="ddp-flow-track" d={verticalPath} vectorEffect="non-scaling-stroke" />
+    </svg>
+  </div>;
 }
 
 function NoOutputTerminal({t}) {
@@ -358,12 +379,38 @@ function NoOutputTerminal({t}) {
   );
 }
 
+function CallbackDataFlow({row, callbackName, t}) {
+  return (
+        <div className="ddp-detail-flow">
+          <div className="ddp-detail-upstream">
+            <DetailDependencyGroup kind="input" title={t("detailInputs")} items={row.inputs} empty={t("noInputs")} />
+            <DetailDependencyGroup kind="state" title={t("detailState")} items={row.state} empty={t("noState")} />
+          </div>
+          <CurvedFlowLink merge />
+          <div className="ddp-detail-callback-node">
+            <span aria-hidden="true"><CodeOutlined /></span>
+            <small>{t("detailCallbackNode")}</small>
+            <strong title={callbackName}>{callbackName}</strong>
+            <code>{row.mode === "client" ? "CLIENT" : "PYTHON"}</code>
+          </div>
+          <CurvedFlowLink />
+          {row.noOutput ? (
+            <NoOutputTerminal t={t} />
+          ) : (
+            <DetailDependencyGroup kind="output" title={t("detailOutputs")} items={row.outputs} empty="—" />
+          )}
+        </div>
+  );
+}
+
 function CallbackDetailModal({row, ...props}) {
   if (!row) return null;
   return <CallbackDetailModalContent row={row} {...props} />;
 }
 
 function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
+  const [flowExpanded, setFlowExpanded] = useState(false);
+  useEffect(() => setFlowExpanded(false), [row.callbackId, open]);
 
   const callbackName = row.mode === "client"
     ? t("clientsideCallback")
@@ -374,52 +421,25 @@ function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
     clientside: t("sourceKindClientside"),
     unavailable: t("sourceKindUnavailable"),
   }[row.sourceKind] || row.sourceKind;
-  const behaviorItems = [
-    {
-      label: t("detailInitialCall"),
-      value: row.preventInitialCall ? t("prevented") : t("allowed"),
-      active: row.preventInitialCall,
-    },
-    {
-      label: t("detailOptional"),
-      value: row.optional ? t("enabled") : t("disabled"),
-      active: row.optional,
-    },
-    {
-      label: t("detailBackground"),
-      value: row.background ? t("enabled") : t("disabled"),
-      active: row.background,
-    },
-    {
-      label: t("detailDynamic"),
-      value: row.dynamicCreator ? t("enabled") : t("disabled"),
-      active: row.dynamicCreator,
-    },
-    {
-      label: t("detailPersistent"),
-      value: row.persistent ? t("enabled") : t("disabled"),
-      active: row.persistent,
-    },
-    {
-      label: t("detailWebsocket"),
-      value: row.websocket ? t("enabled") : t("disabled"),
-      active: row.websocket,
-    },
-    {
-      label: t("detailNoOutput"),
-      value: row.noOutput ? t("enabled") : t("disabled"),
-      active: row.noOutput,
-    },
-    {
-      label: t("detailMcp"),
-      value: row.mcpEnabled ? t("enabled") : t("disabled"),
-      active: row.mcpEnabled,
-    },
-    {
-      label: t("detailRunning"),
-      value: row.running ? t("configured") : t("notConfigured"),
-      active: Boolean(row.running),
-    },
+  const behavior = (label, active, on = "enabled", off = "disabled") => ({
+    label: t(label), value: t(active ? on : off), active: Boolean(active),
+  });
+  const behaviorGroups = [
+    {title: "detailExecutionGroup", items: [
+      behavior("detailInitialCall", row.preventInitialCall, "prevented", "allowed"),
+      behavior("detailBackground", row.background),
+      behavior("detailWebsocket", row.websocket),
+    ]},
+    {title: "detailDependencyGroup", items: [
+      behavior("detailOptional", row.optional),
+      behavior("detailNoOutput", row.noOutput),
+      behavior("detailRunning", row.running, "configured", "notConfigured"),
+    ]},
+    {title: "detailRegistrationGroup", items: [
+      behavior("detailDynamic", row.dynamicCreator),
+      behavior("detailPersistent", row.persistent),
+      behavior("detailMcp", row.mcpEnabled),
+    ]},
   ];
   const roleCount = row.inputs.length + row.state.length + row.outputs.length;
   const runningEntries = Object.entries(row.running || {}).flatMap(([phase, values]) =>
@@ -432,6 +452,7 @@ function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
       rootClassName="ddp-callback-detail-modal-root"
       open={open}
       onCancel={onClose}
+      keyboard={!flowExpanded}
       afterClose={onAfterClose}
       footer={null}
       centered
@@ -505,53 +526,36 @@ function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
         </div>
       </div>
 
-      <section className="ddp-detail-section" aria-label={t("detailFlow")}>
+      <section className="ddp-detail-refined ddp-detail-architecture" aria-label={t("detailFlow")}>
         <div className="ddp-detail-section-heading">
           <div>
             <span>{t("detailTopology")}</span>
             <h3>{t("detailFlow")}</h3>
           </div>
-          <span className="ddp-detail-section-hint"><InfoCircleOutlined />{t("detailTopologyHint")}</span>
+          <div className="ddp-flow-heading-actions">
+            <span className="ddp-detail-section-hint"><InfoCircleOutlined />{t("detailTopologyHint")}</span>
+            <Tooltip title={t("detailFlowFullscreen")}>
+              <button type="button" className="ddp-flow-expand" aria-label={t("detailFlowFullscreen")} aria-haspopup="dialog" onClick={() => setFlowExpanded(true)}><FullscreenOutlined /></button>
+            </Tooltip>
+          </div>
         </div>
-        <div className="ddp-detail-flow">
-          <div className="ddp-detail-upstream">
-            <DetailDependencyGroup kind="input" title={t("detailInputs")} items={row.inputs} empty={t("noInputs")} />
-            <DetailDependencyGroup kind="state" title={t("detailState")} items={row.state} empty={t("noState")} />
-          </div>
-          <div className="ddp-detail-flow-link is-merge" aria-hidden="true">
-            <i /><i /><b /><ArrowRightOutlined />
-          </div>
-          <div className="ddp-detail-callback-node">
-            <span aria-hidden="true"><CodeOutlined /></span>
-            <small>{t("detailCallbackNode")}</small>
-            <strong title={callbackName}>{callbackName}</strong>
-            <code>{row.mode === "client" ? "CLIENT" : "PYTHON"}</code>
-          </div>
-          <div className="ddp-detail-flow-link is-output" aria-hidden="true">
-            <b /><ArrowRightOutlined />
-          </div>
-          {row.noOutput ? (
-            <NoOutputTerminal t={t} />
-          ) : (
-            <DetailDependencyGroup kind="output" title={t("detailOutputs")} items={row.outputs} empty="—" />
-          )}
-        </div>
+        <CallbackDataFlow row={row} callbackName={callbackName} t={t} />
       </section>
 
-      <section className="ddp-detail-section ddp-detail-behavior" aria-label={t("detailBehavior")}>
+      <section className="ddp-detail-refined ddp-detail-behavior" aria-label={t("detailBehavior")}>
         <div className="ddp-detail-section-heading">
           <div>
             <span>{t("detailExecution")}</span>
             <h3>{t("detailBehavior")}</h3>
           </div>
         </div>
-        <div className="ddp-detail-behavior-grid">
-          {behaviorItems.map((item) => (
-            <div className={item.active ? "is-active" : ""} key={item.label}>
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-            </div>
-          ))}
+        <div className="ddp-detail-behavior-groups">
+          {behaviorGroups.map((group) => <div className="ddp-detail-behavior-group" key={group.title}>
+            <h4>{t(group.title)}</h4>
+            <dl>{group.items.map((item) => <div className={item.active ? "is-active" : ""} key={item.label}>
+              <dt>{item.label}</dt><dd><i aria-hidden="true" />{item.value}</dd>
+            </div>)}</dl>
+          </div>)}
         </div>
       </section>
 
@@ -607,6 +611,25 @@ function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
       </section>
 
       <CallbackPerformanceSection row={row} t={t} />
+      <Modal
+        className="ddp-flow-fullscreen"
+        rootClassName="ddp-flow-fullscreen-root"
+        transitionName="ant-fade"
+        open={open && flowExpanded}
+        onCancel={() => setFlowExpanded(false)}
+        title={<div className="ddp-flow-fullscreen-title"><span>{t("detailTopology")}</span><strong>{t("detailFlow")}</strong><code>{callbackName}()</code></div>}
+        closable={{"aria-label": t("detailFlowExitFullscreen")}}
+        closeIcon={<FullscreenExitOutlined />}
+        footer={null}
+        width="100%"
+        zIndex={100030}
+        destroyOnHidden
+      >
+        <div className="ddp-detail-refined ddp-flow-fullscreen-canvas">
+          <CallbackDataFlow row={row} callbackName={callbackName} t={t} />
+          <div className="ddp-flow-fullscreen-note"><InfoCircleOutlined />{t("detailTopologyHint")}<span>{t("detailFlowEscapeHint")}</span></div>
+        </div>
+      </Modal>
     </Modal>
   );
 }
