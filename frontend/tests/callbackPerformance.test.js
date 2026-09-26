@@ -177,7 +177,7 @@ test("monitor refresh captures polling callbacks when a store notification is mi
   const performance = monitor.getCallback("clock.children");
   assert.equal(performance.executionCount, 1);
   assert.equal(performance.latestMs, 18);
-  assert.equal(performance.history[0].completedAt, 5_000);
+  assert.equal(performance.history[0].completedAt, null);
 });
 
 test("monitor scans every existing callback when it attaches to a populated store", () => {

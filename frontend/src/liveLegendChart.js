@@ -3,6 +3,8 @@
 export function createLiveLegendChart(chart, series, initialData, selectionRef) {
   let currentData = initialData;
   let destroyed = false;
+  let queued = false;
+  let version = 0;
 
   // changeData() performs a full G2 render and recreates legendFilter. Keep the
   // interaction's initial state in sync before that render starts so G2 never
@@ -43,10 +45,21 @@ export function createLiveLegendChart(chart, series, initialData, selectionRef) 
     update(nextData) {
       if (nextData === currentData) return pending;
       currentData = nextData;
+      version += 1;
+      if (queued) return pending;
+      queued = true;
       pending = pending.catch(() => {}).then(async () => {
-        if (destroyed) return;
-        syncDefaultSelection();
-        await chart.changeData(nextData);
+        try {
+          let renderedVersion;
+          do {
+            if (destroyed) return;
+            renderedVersion = version;
+            syncDefaultSelection();
+            await chart.changeData(currentData);
+          } while (renderedVersion !== version);
+        } finally {
+          queued = false;
+        }
       });
       return pending;
     },

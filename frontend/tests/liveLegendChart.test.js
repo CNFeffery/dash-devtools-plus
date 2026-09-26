@@ -108,8 +108,21 @@ test("queued updates read the latest user choice before each render", async () =
   });
   await Promise.all([first, second]);
   const updates = chart.calls.filter(([event]) => event === "changeData");
-  assert.equal(updates.length, 2);
+  assert.equal(updates.length, 1);
+  assert.deepEqual(updates[0][1], [{value: 2}]);
   assert.ok(updates.every(([, , defaultSelect]) =>
     defaultSelect.length === 1 && defaultSelect[0] === "memory"));
   controller.destroy();
+});
+
+test("slow rendering coalesces intermediate frames and stops queued work on destroy", async () => {
+  const chart = fakeChart(); let finishRender;
+  chart.render = () => new Promise((resolve) => { finishRender = resolve; });
+  const controller = createLiveLegendChart(chart, ["server"], [], {current: null});
+  const pending = [];
+  for (let i = 0; i < 100; i++) pending.push(controller.update([{duration: i}]));
+  finishRender(); await Promise.all(pending);
+  assert.deepEqual(chart.calls.filter(([name]) => name === "changeData").map(([, data]) => data), [[{duration: 99}]]);
+  const next = controller.update([{duration: 100}]); controller.destroy(); await next;
+  assert.equal(chart.calls.filter(([name]) => name === "changeData").length, 1);
 });

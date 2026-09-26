@@ -1,18 +1,38 @@
-import {useEffect, useSyncExternalStore} from "react";
+import {useCallback, useEffect, useSyncExternalStore} from "react";
 
 import {callbackPerformanceMonitor} from "./callbackPerformance";
 
-export function useCallbackPerformanceSnapshot() {
+const noStore = () => null;
+
+function usePerformanceMonitor() {
+  const context = window.dash_component_api?.useDashContext?.() || {};
+  const store = (context.useStore || noStore)();
+  return store ? callbackPerformanceMonitor.forStore(store) : callbackPerformanceMonitor;
+}
+
+export function useCallbackPerformanceSnapshot(enabled = true) {
+  const monitor = usePerformanceMonitor();
+  // Collect every execution synchronously; only throttle React notifications.
+  const subscribe = useCallback((listener) => {
+    if (!enabled) return () => {};
+    let timer = null;
+    const unsubscribe = monitor.subscribe(() => {
+      if (timer !== null) return;
+      timer = window.setTimeout(() => { timer = null; listener(); }, 100);
+    });
+    return () => { unsubscribe(); window.clearTimeout(timer); };
+  }, [monitor, enabled]);
   const snapshot = useSyncExternalStore(
-    callbackPerformanceMonitor.subscribe,
-    callbackPerformanceMonitor.getSnapshot,
-    callbackPerformanceMonitor.getSnapshot,
+    subscribe,
+    monitor.getSnapshot,
+    monitor.getSnapshot,
   );
 
   return {
     connected: snapshot.connected,
     revision: snapshot.revision,
-    getCallback: callbackPerformanceMonitor.getCallback,
+    getCallback: monitor.getCallback,
+    monitor,
   };
 }
 
@@ -27,10 +47,10 @@ export function useCallbackPerformance(callbackId) {
       500,
     );
     return () => window.clearInterval(timer);
-  }, [callbackId]);
+  }, [callbackId, snapshot.monitor]);
 
   return {
     connected: snapshot.connected,
-    performance: callbackPerformanceMonitor.getCallback(callbackId),
+    performance: snapshot.getCallback(callbackId),
   };
 }

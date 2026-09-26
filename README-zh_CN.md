@@ -89,11 +89,12 @@ configure_devtools_plus(
 
 ## 🧪 示例应用
 
-[`examples/`](./examples/) 中提供了四个复杂度递进的应用：
+[`examples/`](./examples/) 中提供了五个聚焦不同场景、复杂度递进的应用：
 
 | 示例 | 重点 | 运行方式 |
 | --- | --- | --- |
 | `simple` | 一个服务端回调和一个客户端回调。 | `python examples/simple/app.py` |
+| `callback_performance` | 使用三种耗时特征鲜明的回调演示实时性能监控。 | `python examples/callback_performance/app.py` |
 | `intermediate` | 使用 Dash 内置组件构建的旅行预算规划器。 | `python examples/intermediate/app.py` |
 | `comprehensive` | 用于全功能验收的大型回调实验室。 | `python examples/comprehensive/app.py` |
 | `fastapi` | 使用持久 WebSocket 回调和 FastAPI 接口的服务端时间流演示。 | `python examples/fastapi/app.py` |

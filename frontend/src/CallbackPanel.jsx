@@ -1,6 +1,5 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
-import {Chart} from "@antv/g2";
-import {createLiveLegendChart} from "./liveLegendChart";
+import React, {useEffect, useMemo, useState} from "react";
+import CallbackPerformanceSection from "./CallbackPerformanceSection";
 import {Alert, Button, Dropdown, Empty, Input, Modal, Popover, Select, Space, Switch, Table, Tag, Tooltip} from "antd";
 import {
   ApiOutlined,
@@ -24,17 +23,17 @@ import {
   ReloadOutlined,
   SearchOutlined,
   StopOutlined,
-  SwapOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import {siCursor, siPycharm} from "simple-icons";
 import {comparePerformanceValues, describeExecutionRecency} from "./callbackPerformance";
+import {PERFORMANCE_DURATION_COLUMNS} from "./callbackPerformanceView";
 import {
   readCallbackPerformanceColumns,
   writeCallbackPerformanceColumns,
 } from "./callbackTablePreferences";
 import {endpointUrl, normalizeCallbacks} from "./utils";
-import {useCallbackPerformance, useCallbackPerformanceSnapshot} from "./useCallbackPerformance";
+import {useCallbackPerformanceSnapshot} from "./useCallbackPerformance";
 
 const PAGE_SIZE = 8;
 const SELECT_CLASS_NAMES = {popup: {root: "ddp-callback-select-popup"}};
@@ -249,22 +248,6 @@ function formatDuration(value, empty = "—") {
   return `${Math.round(value)} ms`;
 }
 
-function formatBytes(value, empty = "—") {
-  if (!Number.isFinite(value)) return empty;
-  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(2)} MiB`;
-  if (value >= 1024) return `${(value / 1024).toFixed(1)} KiB`;
-  return `${Math.round(value)} B`;
-}
-
-function performanceStatusLabel(status, t) {
-  return {
-    SUCCESS: t("performanceStatusSuccess"),
-    NO_UPDATE: t("performanceStatusNoUpdate"),
-    NO_RESPONSE: t("performanceStatusNoResponse"),
-    CLIENTSIDE_ERROR: t("performanceStatusClientError"),
-  }[status] || status || t("performanceStatusUnknown");
-}
-
 function PerformanceMetricCell({connected, metric, performance, t}) {
   if (!connected) {
     return (
@@ -342,231 +325,6 @@ function LastExecutionCell({connected, completedAt, executionCount, currentTime,
       <strong>{absoluteTime}</strong>
       <span><HistoryOutlined aria-hidden="true" />{formatExecutionRecency(completedAt, currentTime, t)}</span>
     </time>
-  );
-}
-
-const PERFORMANCE_PHASES = ["server", "network"];
-
-function PerformanceSparkline({history, t}) {
-  const containerRef = useRef(null);
-  const controllerRef = useRef(null);
-  const selectedPhasesRef = useRef(null);
-  const records = useMemo(() => history
-    .filter((record) => record.measurementAvailable)
-    .slice(-30), [history]);
-  const chartData = useMemo(() => records.flatMap((record, index) => {
-    const total = Math.max(0, Number(record.totalMs) || 0);
-    const server = Math.min(total, Math.max(0, Number(record.serverMs) || 0));
-    return [
-      {sample: String(index + 1), duration: server, phase: "server"},
-      {sample: String(index + 1), duration: total - server, phase: "network"},
-    ];
-  }), [records]);
-
-  useEffect(() => {
-    if (!containerRef.current) return undefined;
-    const chart = new Chart({container: containerRef.current, autoFit: true, height: 120});
-    chart.options({
-      type: "view",
-      autoFit: true,
-      data: chartData,
-      paddingLeft: 7,
-      paddingRight: 7,
-      paddingTop: 28,
-      paddingBottom: 5,
-      encode: {x: "sample", y: "duration", color: "phase"},
-      scale: {
-        x: {padding: 0.68},
-        y: {nice: true},
-        color: {
-          domain: PERFORMANCE_PHASES,
-          range: ["#36a986", "#119dff"],
-        },
-      },
-      axis: {x: false, y: false},
-      legend: {color: {
-        position: "top",
-        layout: {justifyContent: "flex-end"},
-        labelFormatter: (phase) => phase === "server" ? t("performanceServer") : t("performanceNetwork"),
-        defaultSelect: selectedPhasesRef.current ?? undefined,
-      }},
-      interaction: {tooltip: {shared: true}, legendFilter: true},
-      animate: false,
-      children: [
-        {
-          type: "interval",
-          transform: [{type: "dodgeX", padding: 0}],
-          style: {
-            fillOpacity: 0.9,
-            radiusTopLeft: 2,
-            radiusTopRight: 2,
-          },
-        },
-      ],
-    });
-    const controller = createLiveLegendChart(chart, PERFORMANCE_PHASES, chartData, selectedPhasesRef);
-    controllerRef.current = controller;
-    return () => {
-      controller.destroy();
-      controllerRef.current = null;
-    };
-  }, [records.length > 0, t]);
-
-  useEffect(() => {
-    controllerRef.current?.update(chartData).catch((error) => {
-      console.warn("[dash-devtools-plus] Callback performance chart render failed", error);
-    });
-  }, [chartData, records, t]);
-
-  return (
-    <div className="ddp-performance-chart">
-      <div className="ddp-performance-chart-label">
-        <span className="ddp-performance-chart-title"><LineChartOutlined />{t("performanceTrend")}</span>
-        <div className="ddp-performance-chart-meta">
-          <small>{t("performanceRecentSamples").replace("{count}", String(records.length))}</small>
-        </div>
-      </div>
-      {records.length ? (
-        <div ref={containerRef} className="ddp-performance-chart-canvas" aria-label={t("performanceTrend")} />
-      ) : (
-        <div className="ddp-performance-chart-empty">{t("performanceNoSamples")}</div>
-      )}
-    </div>
-  );
-}
-
-function CallbackPerformanceSection({callbackId, t}) {
-  const {connected, performance} = useCallbackPerformance(callbackId);
-  const history = [...performance.history].reverse().slice(0, 20);
-  const transferTotal = performance.requestSize + performance.responseSize;
-  const supportingMetrics = [
-    [t("performanceExecutions"), String(performance.executionCount), "is-count"],
-    [t("performanceAverage"), formatDuration(performance.averageMs), "is-average"],
-    [t("performanceMaximum"), formatDuration(performance.maxMs), "is-maximum"],
-    [t("performanceMinimum"), formatDuration(performance.minMs), "is-minimum"],
-  ];
-
-  return (
-    <section className="ddp-detail-section ddp-performance-section" aria-label={t("performanceTitle")}>
-      <div className="ddp-detail-section-heading">
-        <div>
-          <span>{t("performanceEyebrow")}</span>
-          <h3>{t("performanceTitle")}</h3>
-        </div>
-        <span className={`ddp-performance-live ${connected ? "is-connected" : ""}`}>
-          <i aria-hidden="true" />
-          {t(connected ? "performanceLive" : "performanceWaiting")}
-        </span>
-      </div>
-
-      <div className="ddp-performance-console">
-        <div className="ddp-performance-primary">
-          <div className="ddp-performance-hero-label">
-            <span aria-hidden="true"><FieldTimeOutlined /></span>
-            <span>{t("performanceLatest")}</span>
-          </div>
-          <strong>{formatDuration(performance.latestMs)}</strong>
-          <div className="ddp-performance-hero-meta">
-            <span className={`ddp-performance-status is-${String(performance.latestStatus || "unknown").toLowerCase().replaceAll("_", "-")}`}>
-              {performance.executionCount
-                ? performanceStatusLabel(performance.latestStatus, t)
-                : t("performanceNotRun")}
-            </span>
-            <small>{performance.executionCount}{t("performanceRunsShort")}</small>
-          </div>
-        </div>
-        <div className="ddp-performance-stats">
-          {supportingMetrics.map(([label, value, className]) => (
-            <div className={className} key={label}>
-              <i aria-hidden="true" />
-              <span>{label}</span>
-              <strong>{value}</strong>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="ddp-performance-analysis">
-        <PerformanceSparkline history={performance.history} t={t} />
-        <div className="ddp-performance-transfer">
-          <div className="ddp-performance-transfer-heading">
-            <span><SwapOutlined />{t("performanceTransfer")}</span>
-            <Tooltip title={t("performanceTransferHint")} placement="topRight">
-              <InfoCircleOutlined className="ddp-performance-transfer-info" />
-            </Tooltip>
-          </div>
-          <strong className="ddp-performance-transfer-total">{formatBytes(transferTotal)}</strong>
-          <div className="ddp-performance-transfer-breakdown">
-            <div>
-              <span><i className="is-request" />{t("performanceRequest")}</span>
-              <strong>{formatBytes(performance.requestSize)}</strong>
-            </div>
-            <div>
-              <span><i className="is-response" />{t("performanceResponse")}</span>
-              <strong>{formatBytes(performance.responseSize)}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="ddp-performance-history-heading">
-        <div>
-          <HistoryOutlined aria-hidden="true" />
-          <span>{t("performanceHistory")}</span>
-        </div>
-        {(performance.discardedCount > 0 || performance.unobservedCount > 0) && (
-          <small>
-            {t("performanceOmitted").replace(
-              "{count}",
-              String(performance.discardedCount + performance.unobservedCount),
-            )}
-          </small>
-        )}
-      </div>
-
-      {history.length ? (
-        <div className="ddp-performance-history-scroll">
-          <table className="ddp-performance-history-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>{t("performanceCompleted")}</th>
-                <th>{t("performanceStatus")}</th>
-                <th>{t("performanceTotal")}</th>
-                <th>{t("performanceServer")}</th>
-                <th>{t("performanceNetwork")}</th>
-                <th>{t("performanceRequest")}</th>
-                <th>{t("performanceResponse")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((record) => (
-                <tr key={record.sequence}>
-                  <td>{record.sequence}</td>
-                  <td>{new Date(record.completedAt).toLocaleTimeString()}</td>
-                  <td>
-                    <span className={`ddp-performance-status is-${String(record.status || "unknown").toLowerCase().replaceAll("_", "-")}`}>
-                      {performanceStatusLabel(record.status, t)}
-                    </span>
-                  </td>
-                  <td><strong>{formatDuration(record.totalMs)}</strong></td>
-                  <td>{formatDuration(record.serverMs)}</td>
-                  <td>{formatDuration(record.networkMs)}</td>
-                  <td>{formatBytes(record.requestSize)}</td>
-                  <td>{formatBytes(record.responseSize)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="ddp-performance-history-empty">
-          <ThunderboltOutlined aria-hidden="true" />
-          <strong>{t("performanceNoHistory")}</strong>
-          <span>{t("performanceNoHistoryHint")}</span>
-        </div>
-      )}
-    </section>
   );
 }
 
@@ -848,7 +606,7 @@ function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
         )}
       </section>
 
-      <CallbackPerformanceSection callbackId={row.callbackId} t={t} />
+      <CallbackPerformanceSection row={row} t={t} />
     </Modal>
   );
 }
@@ -865,7 +623,7 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
   );
   const [selectedCallback, setSelectedCallback] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const performanceSnapshot = useCallbackPerformanceSnapshot();
+  const performanceSnapshot = useCallbackPerformanceSnapshot(isActive && showPerformanceMetrics);
   const selectStyles = useMemo(
     () => ({popup: {root: {"--ddp-primary": accentColor}}}),
     [accentColor],
@@ -917,11 +675,11 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
   const [relativeNow, setRelativeNow] = useState(() => Date.now());
 
   useEffect(() => {
-    if (!isActive || !hasExecutionTimes) return undefined;
+    if (!isActive || !showPerformanceMetrics || !hasExecutionTimes) return undefined;
     setRelativeNow(Date.now());
     const timer = window.setInterval(() => setRelativeNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, [isActive, hasExecutionTimes]);
+  }, [isActive, showPerformanceMetrics, hasExecutionTimes]);
 
   const filteredRows = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -1005,48 +763,21 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
         />
       ),
     },
-    {
-      title: t("performanceAverage"),
-      dataIndex: ["performance", "averageMs"],
-      key: "performance-average",
+    ...PERFORMANCE_DURATION_COLUMNS.map(([metric, label]) => ({
+      title: metric === "minMs" || metric === "maxMs"
+        ? <Tooltip title={t("performanceExtremaHint")}>{t(label)}</Tooltip>
+        : t(label),
+      dataIndex: ["performance", metric],
+      key: `performance-${metric}`,
       width: 118,
       align: "right",
       className: "ddp-performance-column",
-      sorter: (left, right) => comparePerformanceValues(
-        left.performance.averageMs,
-        right.performance.averageMs,
-      ),
+      sorter: (left, right) => comparePerformanceValues(left.performance[metric], right.performance[metric]),
       sortDirections: ["descend", "ascend"],
       render: (_value, row) => (
-        <PerformanceMetricCell
-          connected={performanceSnapshot.connected}
-          metric="averageMs"
-          performance={row.performance}
-          t={t}
-        />
+        <PerformanceMetricCell connected={performanceSnapshot.connected} metric={metric} performance={row.performance} t={t} />
       ),
-    },
-    {
-      title: t("performanceLatest"),
-      dataIndex: ["performance", "latestMs"],
-      key: "performance-latest",
-      width: 118,
-      align: "right",
-      className: "ddp-performance-column",
-      sorter: (left, right) => comparePerformanceValues(
-        left.performance.latestMs,
-        right.performance.latestMs,
-      ),
-      sortDirections: ["descend", "ascend"],
-      render: (_value, row) => (
-        <PerformanceMetricCell
-          connected={performanceSnapshot.connected}
-          metric="latestMs"
-          performance={row.performance}
-          t={t}
-        />
-      ),
-    }] : []),
+    }))] : []),
     {
       title: t("columnOutput"), dataIndex: "outputs", key: "output", width: 218,
       render: (items, row) => row.noOutput ? (
@@ -1190,7 +921,7 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
           rowKey="key"
           size="small"
           tableLayout="fixed"
-          scroll={{x: showPerformanceMetrics ? 1890 : 1350}}
+          scroll={{x: showPerformanceMetrics ? 2126 : 1350}}
           locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("emptyCallbacks")} />}}
           pagination={{
             pageSize: PAGE_SIZE,

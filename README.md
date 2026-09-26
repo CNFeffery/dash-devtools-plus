@@ -89,11 +89,12 @@ See [Configuration](./docs/en/configuration.md) for behavior, validation rules, 
 
 ## 🧪 Example applications
 
-Four applications in [`examples/`](./examples/) cover increasingly complex use cases:
+Five applications in [`examples/`](./examples/) cover focused and increasingly complex use cases:
 
 | Example | Focus | Run |
 | --- | --- | --- |
 | `simple` | One server callback and one clientside callback. | `python examples/simple/app.py` |
+| `callback_performance` | Three contrasting callbacks for live performance monitoring. | `python examples/callback_performance/app.py` |
 | `intermediate` | A travel-budget planner built with Dash core components. | `python examples/intermediate/app.py` |
 | `comprehensive` | A large callback laboratory for acceptance testing all workspaces. | `python examples/comprehensive/app.py` |
 | `fastapi` | A WebSocket-powered server-time stream with FastAPI APIs. | `python examples/fastapi/app.py` |

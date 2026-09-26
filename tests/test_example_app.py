@@ -5,6 +5,12 @@ from urllib.parse import unquote
 import pytest
 
 from dash_devtools_plus import plugin
+from examples.callback_performance.app import (
+    POLL_DELAY_SECONDS,
+    app as callback_performance_app,
+    handle_poll,
+    handle_server_click,
+)
 from examples.comprehensive.app import app, publish_seed, trigger_debug_error
 from examples.intermediate.app import app as intermediate_app, plan_trip
 from examples.simple.app import app as simple_app, create_greeting
@@ -47,7 +53,23 @@ def test_intermediate_example_is_one_cohesive_core_component_scenario():
     assert "预算充足" in advice
 
 
-@pytest.mark.parametrize("example_app", [simple_app, intermediate_app, app])
+def test_callback_performance_example_has_three_contrasting_callbacks(monkeypatch):
+    dependencies = callback_performance_app._callback_list
+    sleeps = []
+
+    monkeypatch.setattr("examples.callback_performance.app.time.sleep", sleeps.append)
+
+    assert len(dependencies) == 3
+    assert sum(bool(item.get("clientside_function")) for item in dependencies) == 1
+    assert sum(not item.get("clientside_function") for item in dependencies) == 2
+    assert "第 3 次点击" in handle_server_click(3)
+    assert "第 7 次轮询" in handle_poll(7)
+    assert sleeps == [1.5, POLL_DELAY_SECONDS]
+
+
+@pytest.mark.parametrize(
+    "example_app", [simple_app, callback_performance_app, intermediate_app, app]
+)
 def test_each_example_serves_its_page_layout_and_callback_manifest(example_app):
     enable_dev_tools_once(example_app)
     client = example_app.server.test_client()

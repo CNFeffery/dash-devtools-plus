@@ -9,3 +9,5 @@ build/
 dist/
 node_modules/
 .coverage
+output/playwright/
+output/compatibility/

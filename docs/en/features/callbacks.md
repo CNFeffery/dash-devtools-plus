@@ -10,7 +10,7 @@ Search callback names, docstrings, source files, inputs, outputs, and state. Com
 
 Callback type and source location stay pinned to the left while the remaining columns scroll. Every header remains on one line, cells are vertically centered, and subtle column rules make dense rows easier to scan. The Docstring cell keeps its title and a single-line preview; hover it for the complete content.
 
-Use **Show performance metrics** to display or hide Last execution, Executions, Average, and Latest together. The preference is persisted in the current browser. Each metric has its own flat, sortable column—there is no grouped header.
+Use **Show performance metrics** to display or hide Last execution, Executions, Average, Latest, Minimum and Maximum together. The preference is persisted in the current browser. Each metric has its own flat, sortable column. Extrema tooltips explain that only captured individual timings are included.
 
 ## 📖 Read a callback row
 
@@ -18,30 +18,36 @@ Use **Show performance metrics** to display or hide Last execution, Executions, 
 | --- | --- |
 | Callback type | Server-side or clientside registration. |
 | Source location | Project-relative Python source and an editor action when a supported local editor is available. |
-| Last execution / Executions / Average / Latest | Callback execution metrics for the current page lifecycle; shown or hidden together from the toolbar. |
+| Last execution / Executions / Average / Latest / Minimum / Maximum | Callback execution metrics for the owning Renderer on the current page; shown or hidden together from the toolbar. |
 | Output / Input / State roles | The registered dependency roles, including multiple values. |
 | Docstring | The Python function documentation when it is available. |
 | Details | Topology, source kind, role summary, registration metadata, and runtime behavior. |
 
 The details view also surfaces supported Dash metadata such as initial-call behavior, optional dependencies, background execution, dynamic registration, persistence, WebSocket use, no-output callbacks, MCP exposure, and `running` mappings.
 
-Last execution, execution count, average duration, and latest duration are separate sortable columns. Each sorter starts in descending order so recently triggered, high-frequency, and slow callbacks can be brought to the top immediately; the active ordering remains applied as live measurements arrive. Last execution combines the browser's local absolute time with a live relative label: seconds for the first minute, minutes plus seconds until ten minutes, and “More than 10 min ago” thereafter.
+All six metrics are separate sortable columns. Each sorter starts in descending order so recently triggered, high-frequency, and slow callbacks can be brought to the top immediately; the active ordering remains applied as live measurements arrive. Last execution combines the browser's local absolute time with a live relative label: seconds for the first minute, minutes plus seconds until ten minutes, and “More than 10 min ago” thereafter. Unrecoverable completion times display “Time unavailable”.
 
 ## ⚡ Callback performance
 
 ![Live callback performance details in v0.1.4](../../../imgs/docs/callback-performance.webp)
 
-The performance workspace sits at the bottom of callback details as a compact, integrated instrumentation console. Latest duration is the primary reading, execution statistics share one continuous metric panel, and the grouped server/network column chart and transfer summary share a low-padding analysis panel. Click Server or Network in the chart's interactive AntV legend to show or hide that series; the selection stays in place as new executions arrive. Empty states stay compact instead of reserving a large blank region. It covers the current browser page lifecycle and includes:
+The performance workspace sits at the bottom of callback details. A prominent latest-duration reading includes completion status and its percentage difference from the session average. A stacked duration chart places server and network time in context, followed by a four-metric strip with explicit sample counts. Click a chart legend to show or hide its series; the selection stays in place as new executions arrive. Transfer totals stay compact, custom timing stages expand on demand, and the information button explains measurement scope. On narrow screens, the overview stacks vertically and execution records scroll within their own table. It covers the current browser page lifecycle and includes:
 
 - execution count, average duration, latest duration, minimum, and maximum;
-- a grouped server/network duration column chart for the latest 30 executions and the latest 20 detailed records;
+- a stacked duration chart for the latest 30 measured executions and five recent records, expandable to 20;
 - total, server, and network duration per recorded execution;
 - cumulative request and response payload sizes; and
 - completion status, including successful, no-update, no-response, and clientside-error outcomes.
 
-Dash DevTools Plus derives these values from Dash Renderer’s built-in callback profile. It observes the renderer store and calculates each execution by differencing Dash’s cumulative counters; it does not wrap or re-run application callbacks and adds no server-side callback state. While callback details are open, a 500 ms fallback refresh also reads the latest profile so polling callbacks continue updating the metrics, chart, and history without user interaction. Up to 200 detailed records are retained per callback, while lifecycle aggregates continue to cover every observed measured execution.
+Dash DevTools Plus differences the Renderer’s cumulative profile counters. It also observes final callback execution results to supplement HTTP 4xx/5xx failures missing from the profile, recording counts and HTTP status without inventing timings or transfer sizes. Intermediate authentication retries are not additional executions. Native clientside-error and no-response records are not counted twice. No application callback or fetch function is wrapped, and no server-side profiling state is added.
 
-The history is intentionally session-local: a full page reload clears it. When the monitor attaches after multiple executions, Dash's aggregate count and average remain available, but their individual completion times cannot be reconstructed. Payload sizes represent the request body and the response `Content-Length` exposed by Dash; missing response lengths are reported as zero by the renderer. Clientside callbacks have timing data but no network transfer, while executions for which Dash reports no response remain in history without fabricated duration values. WebSocket callback profiling depends on the metrics exposed by the active Dash Renderer version.
+Each Renderer has an independent session, selected through the panel's Dash context. Profile resets clear the old baseline and history. A 500 ms fallback scan runs while details are open. Collection is synchronous; React notifications are throttled to 100 ms, pending chart updates are coalesced, and hidden performance tables do not subscribe to frequent updates.
+
+The main table includes six independently sortable metrics: last execution, count, average, latest, minimum and maximum. Average covers cumulative timed executions; extrema cover only captured individual samples, whose count is shown in details. Each callback retains 200 detailed records, with the latest 30 measured samples plotted and five records displayed by default, expandable to 20. The omitted count includes cached rows outside that visible window. Pre-attachment executions never receive invented timestamps; recovered individual timings with unknown completion times show `—`. Custom `ctx.record_timing` stages appear as cumulative totals and individual history values.
+
+HTTP timing is labeled Server and Network & other, because the remainder also includes browser processing and waiting. Unknown splits show total time only. Clientside callbacks show client time. Background totals include queueing and polling waits; WebSocket and background callbacks show only total time and no unreliable server/network breakdown or transfer sizes.
+
+Request sizes use Dash's string-length estimate, not exact UTF-8 bytes; response sizes use `Content-Length`. Totals cover only data reported by the Renderer and exclude supplemented HTTP failures. Ambiguous zero/missing HTTP sizes appear as `—`; clientside Dash callback transfer is zero. History is page-local and disappears on a full reload. Profiling depends on Renderer internals and cannot recover pre-attachment failures already removed from execution queues and absent from the profile.
 
 ## 🛡️ Scope and safety
 
