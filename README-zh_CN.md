@@ -29,6 +29,8 @@
 
 ## ⚡ 快速开始
 
+当前源码和文档对应 **0.1.4（未发布）**。下方命令安装的是最新已发布版本；如需体验当前开发版，请按[源码安装说明](./docs/zh-CN/quick-start.md#体验未发布的-014)操作。
+
 ```bash
 pip install dash-devtools-plus -U
 ```
@@ -53,7 +55,7 @@ if __name__ == "__main__":
 
 | 工作区 | 能做什么 | 功能文档 |
 | --- | --- | --- |
-| 回调关系 | 搜索回调图数据、源码位置、页面生命周期性能历史、传输量，以及服务端/网络耗时分组柱状图。 | [查看说明](./docs/zh-CN/features/callbacks.md) |
+| 回调关系 | 搜索回调与源码，全屏查看依赖拓扑，并查看实时耗时、极值、传输量估算和执行历史。 | [查看说明](./docs/zh-CN/features/callbacks.md) |
 | 服务器资源 | 实时查看 CPU、内存、磁盘与主机/运行环境信息，并通过可筛选的 AntV 趋势图观察变化。 | [查看说明](./docs/zh-CN/features/server-metrics.md) |
 | 组件探查 | 点击页面已渲染元素，定位其 Dash 组件、布局路径与当前 Props。 | [查看说明](./docs/zh-CN/features/component-inspector.md) |
 | 状态快照 | 保存选中组件的 Props，并在当前浏览器标签页中恢复。 | [查看说明](./docs/zh-CN/features/state-snapshots.md) |

@@ -29,6 +29,8 @@ Start a Dash application in debug mode, then select **Devtools Plus** from the n
 
 ## ⚡ Quick start
 
+This checkout and its documentation describe **0.1.4 (unreleased)**. The command below installs the latest published release; to try the current development version, follow the [source installation instructions](./docs/en/quick-start.md#try-014-before-release).
+
 ```bash
 pip install dash-devtools-plus -U
 ```
@@ -53,7 +55,7 @@ For full installation notes, see [Quick start](./docs/en/quick-start.md).
 
 | Workspace | What it provides | Documentation |
 | --- | --- | --- |
-| Callback relationships | Searchable callback graph data, source locations, lifecycle performance history, payload sizes, and a grouped server/network duration chart. | [Open guide](./docs/en/features/callbacks.md) |
+| Callback relationships | Search callbacks and sources, explore fullscreen dependency topology, and inspect live timings, extrema, payload estimates, and execution history. | [Open guide](./docs/en/features/callbacks.md) |
 | Server resource monitor | Live CPU, memory, disk, and host/runtime information with a filterable AntV trend chart. | [Open guide](./docs/en/features/server-metrics.md) |
 | Component inspector | Click a rendered page element and map it to its Dash component, layout path, and current props. | [Open guide](./docs/en/features/component-inspector.md) |
 | State snapshots | Capture selected component props and restore them within the current browser tab. | [Open guide](./docs/en/features/state-snapshots.md) |

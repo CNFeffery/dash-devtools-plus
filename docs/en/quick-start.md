@@ -16,6 +16,17 @@ pip install dash-devtools-plus -U
 
 The package exposes a `dash_hooks` entry point. Once installed, Dash automatically discovers and registers the integration. You do not need to import `dash_devtools_plus` or call `configure_devtools_plus()` for the default setup.
 
+## Try 0.1.4 before release
+
+Version **0.1.4 is not yet published**. From the repository root, install the checkout into your Python environment:
+
+```bash
+python -m pip install -e ".[dev]"
+python examples/callback_performance/app.py
+```
+
+The checkout includes built frontend assets. If you modify frontend source, use your Node.js environment to run `npm ci` and `npm run build`, then reload the page. Open <http://127.0.0.1:8050> to explore the current callback monitoring and fullscreen topology.
+
 ## 🪄 Minimal application (default setup)
 
 Create and run your Dash application normally:

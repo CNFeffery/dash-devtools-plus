@@ -16,6 +16,17 @@ pip install dash-devtools-plus -U
 
 本包提供 `dash_hooks` 入口点。安装后 Dash 会自动发现并注册该集成；使用默认配置时，无需导入 `dash_devtools_plus`，也无需调用 `configure_devtools_plus()`。
 
+## 体验未发布的 0.1.4
+
+**0.1.4 尚未发布**。在仓库根目录中，将当前源码安装到所用 Python 环境：
+
+```bash
+python -m pip install -e ".[dev]"
+python examples/callback_performance/app.py
+```
+
+仓库已包含前端构建产物。如果修改前端源码，请在所用 Node.js 环境中执行 `npm ci` 和 `npm run build`，然后刷新页面。访问 <http://127.0.0.1:8050>，即可体验当前版本的回调监控与全屏拓扑。
+
 ## 🪄 最小应用（默认配置）
 
 按常规方式创建并运行 Dash 应用即可：
