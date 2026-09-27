@@ -239,16 +239,6 @@ function EnabledDevtoolsPlus({
                 ),
               },
               {
-                key: "server",
-                label: <span className="ddp-tab-label"><DashboardOutlined />{t("serverMetricsNav")}</span>,
-                children: (
-                  <ServerMetricsPanel
-                    monitor={serverMetrics}
-                    t={t}
-                  />
-                ),
-              },
-              {
                 key: "inspector",
                 label: <span className="ddp-tab-label"><ScanOutlined />{t("componentInspectorNav")}</span>,
                 children: (
@@ -282,23 +272,33 @@ function EnabledDevtoolsPlus({
                 ),
               },
               {
-                key: "appearance",
-                label: <span className="ddp-tab-label"><BgColorsOutlined />{t("devtoolsAppearanceNav")}</span>,
-                children: (
-                  <DevtoolsAppearancePanel
-                    value={nativeDevtoolsTheme}
-                    onChange={setNativeDevtoolsTheme}
-                    t={t}
-                  />
-                ),
-              },
-              {
                 key: "environment",
                 label: <span className="ddp-tab-label"><DesktopOutlined />{t("runtimeEnvironmentNav")}</span>,
                 children: (
                   <RuntimeEnvironmentPanel
                     endpoint={runtimeEnvironmentEndpoint}
                     isActive={isOpen && activeTab === "environment"}
+                    t={t}
+                  />
+                ),
+              },
+              {
+                key: "server",
+                label: <span className="ddp-tab-label"><DashboardOutlined />{t("serverMetricsNav")}</span>,
+                children: (
+                  <ServerMetricsPanel
+                    monitor={serverMetrics}
+                    t={t}
+                  />
+                ),
+              },
+              {
+                key: "appearance",
+                label: <span className="ddp-tab-label"><BgColorsOutlined />{t("devtoolsAppearanceNav")}</span>,
+                children: (
+                  <DevtoolsAppearancePanel
+                    value={nativeDevtoolsTheme}
+                    onChange={setNativeDevtoolsTheme}
                     t={t}
                   />
                 ),
