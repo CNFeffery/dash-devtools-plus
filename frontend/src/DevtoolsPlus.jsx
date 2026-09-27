@@ -81,6 +81,7 @@ function EnabledDevtoolsPlus({
   const [nativeDevtoolsTheme, setNativeDevtoolsTheme] = useState(initialNativeDevtoolsTheme);
   const [activeTab, setActiveTab] = useState("callbacks");
   const [inspectionTrail, setInspectionTrail] = useState([]);
+  const [inspectionOrigin, setInspectionOrigin] = useState(null);
   const inspection = inspectionTrail[inspectionTrail.length - 1] || null;
   const [isInspecting, setIsInspecting] = useState(false);
   const t = useMemo(() => createTranslator(locale), [locale]);
@@ -123,10 +124,17 @@ function EnabledDevtoolsPlus({
   }, [setPopup]);
   const completeInspection = useCallback((result) => {
     setInspectionTrail([result]);
+    setInspectionOrigin(null);
     setIsInspecting(false);
     setActiveTab("inspector");
     setPopup(POPUP_ID);
   }, [setPopup]);
+  const inspectSnapshotComponent = useCallback((result) => {
+    setInspectionTrail([result]);
+    setInspectionOrigin("snapshots");
+    setActiveTab("inspector");
+  }, []);
+  const returnToSnapshots = useCallback(() => setActiveTab("snapshots"), []);
   const inspectNestedComponent = useCallback((component, propName, valuePath) => {
     setInspectionTrail((current) => {
       const parent = current[current.length - 1];
@@ -247,6 +255,8 @@ function EnabledDevtoolsPlus({
                   <ComponentInspectorPanel
                     inspection={inspection}
                     inspectionTrail={inspectionTrail}
+                    origin={inspectionOrigin}
+                    onReturnToSnapshots={returnToSnapshots}
                     onInspectComponent={inspectNestedComponent}
                     onNavigate={navigateInspectionTrail}
                     onStart={startInspection}
@@ -257,7 +267,7 @@ function EnabledDevtoolsPlus({
               {
                 key: "snapshots",
                 label: <span className="ddp-tab-label"><CameraOutlined />{t("stateSnapshotsNav")}</span>,
-                children: <StateSnapshotsPanel locale={locale} t={t} />,
+                children: <StateSnapshotsPanel locale={locale} onInspectComponent={inspectSnapshotComponent} t={t} />,
               },
               {
                 key: "dependencies",

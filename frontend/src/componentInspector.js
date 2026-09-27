@@ -196,7 +196,7 @@ function inspectionResult(layout, path, target, root) {
   // Dash layout path and never use it as inspector data.
   const rawProps = layout.props || {};
   const props = sanitizeInspectorValue(rawProps);
-  const rect = root.getBoundingClientRect();
+  const rect = root?.getBoundingClientRect();
   return {
     namespace: layout.namespace,
     type: layout.type,
@@ -208,12 +208,12 @@ function inspectionResult(layout, path, target, root) {
     ),
     target: buildDomDescriptor(target),
     root: buildDomDescriptor(root),
-    bounds: {
+    bounds: rect ? {
       x: Math.round(rect.x),
       y: Math.round(rect.y),
       width: Math.round(rect.width),
       height: Math.round(rect.height),
-    },
+    } : null,
     inspectedAt: Date.now(),
   };
 }
@@ -263,4 +263,57 @@ export function findClosestDashComponent(target) {
 export function formatInspectorId(id) {
   if (id == null) return "—";
   return typeof id === "string" ? id : JSON.stringify(id);
+}
+
+function referenceId(id) {
+  if (id == null || typeof id === "string") return id ?? null;
+  // Pattern-matching IDs are independent of object key insertion order.
+  return JSON.stringify(id, Object.keys(id).sort());
+}
+
+function matchesReference(layout, reference) {
+  return isDashComponentDefinition(layout)
+    && layout.namespace === reference.namespace
+    && layout.type === reference.type
+    && referenceId(layout.props.id) === referenceId(reference.id);
+}
+
+function findReferencePath(value, reference, path = [], ancestors = new WeakSet()) {
+  if (!value || typeof value !== "object" || ancestors.has(value)) return null;
+  if (matchesReference(value, reference)) return path;
+  if (isExcludedComponentNamespace(value.namespace)) return null;
+  ancestors.add(value);
+  for (const [key, child] of Object.entries(value)) {
+    const found = findReferencePath(child, reference,
+      [...path, Array.isArray(value) ? Number(key) : key], ancestors);
+    if (found) return found;
+  }
+  ancestors.delete(value);
+  return null;
+}
+
+// Resolve on demand from the live layout; snapshot props deliberately omit
+// structural values and must never be used as inspector data.
+export function inspectDashComponentReference(reference) {
+  if (!reference || !Array.isArray(reference.path)) return null;
+  let path = reference.path;
+  let layout = getLayout(path);
+  if (!matchesReference(layout, reference)) {
+    if (reference.id == null) return null;
+    layout = getLayout(reference.id);
+    if (!matchesReference(layout, reference)) return null;
+    // Only search the layout when an identified component moved since scanning.
+    path = findReferencePath(getLayout([]), reference);
+    if (!path) return null;
+  }
+
+  const id = reference.id == null ? null
+    : window.dash_component_api?.stringifyId?.(reference.id) ?? referenceId(reference.id);
+  const element = id == null ? null : globalThis.document?.getElementById(id);
+  const domInspection = element ? findClosestDashComponent(element) : null;
+  if (domInspection && matchesReference(domInspection, reference)) {
+    return {...domInspection, path: sanitizeInspectorValue(path)};
+  }
+  // Store, Interval, and components without DOM IDs remain fully inspectable.
+  return inspectionResult(layout, path, null, null);
 }

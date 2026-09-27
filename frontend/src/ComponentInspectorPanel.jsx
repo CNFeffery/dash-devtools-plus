@@ -5,6 +5,7 @@ import {
   ArrowLeftOutlined,
   BorderOutlined,
   BranchesOutlined,
+  CameraOutlined,
   CheckOutlined,
   CodeOutlined,
   CopyOutlined,
@@ -235,6 +236,8 @@ function EmptyInspector({onStart, t}) {
 export default function ComponentInspectorPanel({
   inspection,
   inspectionTrail = [],
+  origin,
+  onReturnToSnapshots,
   onInspectComponent,
   onNavigate,
   onStart,
@@ -276,6 +279,14 @@ export default function ComponentInspectorPanel({
 
   return (
     <section className="ddp-panel ddp-inspector-panel" aria-label={t("componentInspectorTitle")}>
+      {origin === "snapshots" && (
+        <div className="ddp-inspector-origin">
+          <span><CameraOutlined />{t("inspectionFromSnapshot")}</span>
+          <Button size="small" icon={<ArrowLeftOutlined />} onClick={onReturnToSnapshots}>
+            {t("returnToSnapshot")}
+          </Button>
+        </div>
+      )}
       <div className="ddp-workspace-header">
         <div className="ddp-workspace-title">
           <span className="ddp-workspace-icon ddp-inspector-workspace-icon"><ScanOutlined /></span>
@@ -340,15 +351,17 @@ export default function ComponentInspectorPanel({
         ) : (
           <div className="ddp-inspector-mapping">
             <div>
-              <span>{t("selectedElement")}</span>
-              <DomToken descriptor={inspection.target} />
+              <span>{t(origin === "snapshots" ? "snapshotSelectedComponent" : "selectedElement")}</span>
+              {origin === "snapshots"
+                ? <code>{formatInspectorId(inspection.id)}</code>
+                : <DomToken descriptor={inspection.target} />}
             </div>
             <b aria-hidden="true">→</b>
             <div>
               <span>{t("mappedComponent")}</span>
               <strong>{inspection.namespace}.{inspection.type}</strong>
             </div>
-            <small>{t("mappingHint")}</small>
+            <small>{t(origin === "snapshots" ? "snapshotInspectionMappingHint" : "mappingHint")}</small>
           </div>
         )}
 

@@ -13,6 +13,8 @@ State snapshots capture selected component props and restore them later in the s
 3. Search, clear **Only components with IDs** when path-addressed components are needed, or uncheck entries that should not be captured.
 4. Give the snapshot a name and save it.
 
+Each component in the selection tree has an **Inspect** button that opens its inspection without changing checkbox selection. Inspection reads complete current props from the live layout, including search, copying, and component-valued prop drill-down; it does not display saved snapshot values. A source banner offers **Back to snapshots**, preserving your selection, filters, and draft name. The banner remains during drill-down and clears after selecting a new component on the page. Rescan if a component was removed or changed type. Components without a locatable DOM element still expose props and their layout path.
+
 ## ↩️ Restore and delete
 
 The snapshot list shows the route, creation time, component count, saved-prop count, and serialized size. Restore applies only values that differ from the current layout through Dash's clientside property update mechanism. Components that no longer match their ID/path and type are skipped, and the panel reports partial restores. A restore can trigger callbacks, so treat it as a real application state change. Deleting a snapshot cannot be undone.

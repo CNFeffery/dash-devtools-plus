@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {
   Button,
   Checkbox,
@@ -21,6 +21,7 @@ import {
   FolderOpenOutlined,
   ReloadOutlined,
   SaveOutlined,
+  ScanOutlined,
   SearchOutlined,
   UndoOutlined,
 } from "@ant-design/icons";
@@ -33,6 +34,7 @@ import {
   scanDashComponents,
   storeSnapshots,
 } from "./stateSnapshots";
+import {inspectDashComponentReference} from "./componentInspector";
 
 function formatTime(timestamp, locale) {
   return new Intl.DateTimeFormat(locale, {
@@ -45,17 +47,43 @@ function formatTime(timestamp, locale) {
   }).format(new Date(timestamp));
 }
 
-function componentTitle(component, t) {
+function stopTreeEvent(event) {
+  event.stopPropagation();
+}
+
+function componentTitle(component, t, onInspect) {
   return (
     <span className="ddp-snapshot-tree-leaf">
       <span className="ddp-snapshot-type">{component.type}</span>
       <code>{component.idText || t("noComponentId")}</code>
       <small>{component.propCount} {t("propsUnit")}</small>
+      {/* Isolate focus too: Tree would activate its first node and scroll this
+          virtualized action out of view before the click finishes. */}
+      <Button
+        className="ddp-snapshot-inspect"
+        type="text"
+        size="small"
+        icon={<ScanOutlined />}
+        aria-label={`${t("componentInspectorNav")} · ${component.type} · ${component.idText || t("noComponentId")}`}
+        onPointerDown={stopTreeEvent}
+        onMouseDown={stopTreeEvent}
+        onFocus={stopTreeEvent}
+        onBlur={stopTreeEvent}
+        onDoubleClick={stopTreeEvent}
+        onKeyDown={stopTreeEvent}
+        onKeyUp={stopTreeEvent}
+        onClick={(event) => {
+          event.stopPropagation();
+          onInspect(component);
+        }}
+      >
+        {t("inspectComponent")}
+      </Button>
     </span>
   );
 }
 
-function buildTree(components, query, onlyWithId, t) {
+function buildTree(components, query, onlyWithId, t, onInspect) {
   const groups = new Map();
   filterSnapshotComponents(components, query, onlyWithId).forEach((component) => {
     if (!groups.has(component.namespace)) groups.set(component.namespace, []);
@@ -72,7 +100,7 @@ function buildTree(components, query, onlyWithId, t) {
     ),
     children: items.map((component) => ({
       key: component.key,
-      title: componentTitle(component, t),
+      title: componentTitle(component, t, onInspect),
       isLeaf: true,
     })),
   }));
@@ -90,7 +118,7 @@ function EmptySnapshots({t}) {
   );
 }
 
-export default function StateSnapshotsPanel({locale, t}) {
+export default function StateSnapshotsPanel({locale, onInspectComponent, t}) {
   const [api, contextHolder] = message.useMessage();
   const [snapshots, setSnapshots] = useState(loadStoredSnapshots);
   const [mode, setMode] = useState("list");
@@ -106,9 +134,19 @@ export default function StateSnapshotsPanel({locale, t}) {
     if (!storeSnapshots(snapshots)) api.warning(t("snapshotStorageWarning"));
   }, [api, snapshots, t]);
 
+  const inspectComponent = useCallback((component) => {
+    try {
+      const result = inspectDashComponentReference(component);
+      if (result) onInspectComponent(result);
+      else api.warning(t("snapshotInspectionUnavailable"));
+    } catch {
+      api.warning(t("snapshotInspectionUnavailable"));
+    }
+  }, [api, onInspectComponent, t]);
+
   const treeData = useMemo(
-    () => buildTree(components, query, onlyWithId, t),
-    [components, onlyWithId, query, t],
+    () => buildTree(components, query, onlyWithId, t, inspectComponent),
+    [components, onlyWithId, query, t, inspectComponent],
   );
   const visibleComponentKeys = useMemo(() => new Set(
     treeData.flatMap((group) => group.children.map((item) => item.key)),

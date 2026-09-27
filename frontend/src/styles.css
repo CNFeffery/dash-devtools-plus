@@ -3254,6 +3254,23 @@
 
 .ddp-inspector-panel .ddp-eyebrow {font-size: 12px;}
 
+.ddp-inspector-origin {
+  align-items: center;
+  background: color-mix(in srgb, var(--ddp-primary) 5%, var(--ddp-panel));
+  border: 1px solid var(--ddp-line);
+  border-radius: 10px;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+}
+
+.ddp-inspector-origin > span {align-items: center; color: var(--ddp-muted); display: inline-flex; font-size: 12px; gap: 8px;}
+.ddp-inspector-origin > span > .anticon {color: var(--ddp-primary);}
+
 .ddp-inspector-header-actions {
   align-items: center;
   display: flex;
@@ -4106,6 +4123,15 @@
 .ddp-snapshot-type {color: var(--ddp-ink); flex: 0 0 180px; font-size: 12px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 .ddp-snapshot-tree-leaf code {background: #eef5f8; border-radius: 6px; color: #587186; flex: 1; font: 10px/24px var(--ddp-mono); overflow: hidden; padding: 0 7px; text-overflow: ellipsis; white-space: nowrap;}
 .ddp-snapshot-tree-leaf small {color: #8a9dad; flex: 0 0 74px; font-size: 9px; text-align: right;}
+.ddp-snapshot-inspect.ant-btn {color: var(--ddp-primary); flex: 0 0 auto; font-size: 11px;}
+
+@media (max-width: 680px) {
+  .ddp-snapshot-tree-leaf {display: grid; gap: 2px 8px; grid-template-columns: minmax(0, 1fr) auto; padding: 3px 0;}
+  .ddp-snapshot-tree-leaf .ddp-snapshot-type {grid-column: 1; grid-row: 1;}
+  .ddp-snapshot-tree-leaf small {grid-column: 2; grid-row: 1;}
+  .ddp-snapshot-tree-leaf code {grid-column: 1; grid-row: 2;}
+  .ddp-snapshot-inspect.ant-btn {grid-column: 2; grid-row: 2;}
+}
 
 .ddp-snapshot-capture-footer {
   align-items: center;
