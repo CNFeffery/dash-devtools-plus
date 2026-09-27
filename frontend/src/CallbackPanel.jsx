@@ -640,6 +640,7 @@ export default function CallbackPanel({endpoint, isActive, searchRequest, t, acc
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [query, setQuery] = useState("");
+  const [searchMode, setSearchMode] = useState("fuzzy");
   const [page, setPage] = useState(1);
   const [mode, setMode] = useState("all");
   const [visibility, setVisibility] = useState("all");
@@ -651,13 +652,14 @@ export default function CallbackPanel({endpoint, isActive, searchRequest, t, acc
   useEffect(() => {
     if (!searchRequest) return;
     setQuery(searchRequest.query);
+    setSearchMode("exact-id");
     setMode("all");
     setVisibility("all");
     setPage(1);
     setDetailOpen(false);
   }, [searchRequest]);
 
-  useEffect(() => setPage(1), [query, mode, visibility]);
+  useEffect(() => setPage(1), [query, searchMode, mode, visibility]);
   const performanceSnapshot = useCallbackPerformanceSnapshot(isActive && showPerformanceMetrics);
   const selectStyles = useMemo(
     () => ({popup: {root: {"--ddp-primary": accentColor}}}),
@@ -717,7 +719,7 @@ export default function CallbackPanel({endpoint, isActive, searchRequest, t, acc
   }, [isActive, showPerformanceMetrics, hasExecutionTimes]);
 
   const filteredRows = useMemo(() => {
-    const matchesQuery = createCallbackQueryMatcher(query);
+    const matchesQuery = createCallbackQueryMatcher(query, searchMode);
     return rowsWithPerformance.filter((row) => {
       const matchesMode = mode === "all" || row.mode === mode;
       const matchesVisibility =
@@ -725,7 +727,9 @@ export default function CallbackPanel({endpoint, isActive, searchRequest, t, acc
         (visibility === "hidden" ? row.hidden : !row.hidden);
       return matchesMode && matchesVisibility && matchesQuery(row);
     });
-  }, [rowsWithPerformance, query, mode, visibility]);
+  }, [rowsWithPerformance, query, searchMode, mode, visibility]);
+  const searchPlaceholder = t(searchMode === "exact-id" ? "searchExactIdPlaceholder"
+    : searchMode === "exact-property" ? "searchExactPropertyPlaceholder" : "searchPlaceholder");
   const visibleCountLabel = filteredRows.length === 1
     ? t("visibleCountOne")
     : t("visibleCount");
@@ -888,12 +892,26 @@ export default function CallbackPanel({endpoint, isActive, searchRequest, t, acc
         <span className="ddp-commandbar-icon" aria-hidden="true"><FilterOutlined /></span>
         <Input
           variant="borderless"
-          aria-label={t("searchPlaceholder")}
+          aria-label={searchPlaceholder}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder={t("searchPlaceholder")}
+          placeholder={searchPlaceholder}
           prefix={<SearchOutlined />}
           allowClear
+        />
+        <Select
+          className="ddp-search-mode"
+          classNames={SELECT_CLASS_NAMES}
+          styles={selectStyles}
+          variant="borderless"
+          aria-label={t("searchMode")}
+          value={searchMode}
+          onChange={setSearchMode}
+          options={[
+            {value: "fuzzy", label: t("searchFuzzy")},
+            {value: "exact-id", label: t("searchExactId")},
+            {value: "exact-property", label: t("searchExactProperty")},
+          ]}
         />
         <Select
           classNames={SELECT_CLASS_NAMES}

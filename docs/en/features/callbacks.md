@@ -10,6 +10,14 @@ The screenshots use real executions from the bundled examples; timings depend on
 
 Search callback names, docstrings, source files, inputs, outputs, and state. Combine this with server/client and visibility filters to narrow a large application graph.
 
+Choose a search mode to the right of the input. Switching modes preserves your query and returns to the first result page:
+
+- **Fuzzy search** (default): case-insensitive substring matching across the fields above.
+- **Exact ID search**: case-sensitive matching of complete component IDs in Input, Output, and State only. Source text and docstrings do not produce matches.
+- **Exact prop search**: enter a complete property name, such as `value`, `children`, or `n_intervals`, to find callbacks referencing that property in Input, Output, or State on any component. Matching is case-sensitive and excludes partial property names, component IDs, and source text.
+
+Exact ID search accepts dictionary IDs, for example `{"type":"row","index":2}`. JSON whitespace and key order are ignored; registered `ALL`, `MATCH`, and `ALLSMALLER` dependencies with matching keys and fixed values are included. Exact prop search also works with dictionary IDs and wildcard dependencies, but checks only the property name, with no component ID required. These are registration-level relationships, not a guarantee of invocation in a particular execution. Clearing the input removes the query filter; incomplete exact queries never fall back to fuzzy search. **Related callbacks** in the Component Inspector fills the ID and automatically selects **Exact ID search**.
+
 Callback type and source location stay pinned to the left while the remaining columns scroll. Every header remains on one line, cells are vertically centered, and subtle column rules make dense rows easier to scan. The Docstring cell keeps its title and a single-line preview; hover it for the complete content.
 
 Use **Show performance metrics** to display or hide Last execution, Executions, Average, Latest, Minimum and Maximum together. The preference is persisted in the current browser. Each metric has its own flat, sortable column. Extrema tooltips explain that only captured individual timings are included.

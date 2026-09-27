@@ -27,7 +27,7 @@ The inspection click is intercepted before it reaches the target control, so sel
 
 Dash development-tool namespaces are excluded so the inspector focuses on the application rather than the tool UI itself.
 
-For components with a valid ID, **Related callbacks** beside **Inspect again** opens the callback workspace and fills its search box with the component ID. This resets callback mode and visibility filters to all callbacks and returns to the first page. Dictionary IDs also find matching wildcard callbacks. Components without a valid ID do not show this action.
+For components with a valid ID, **Related callbacks** beside **Inspect again** opens the callback workspace, fills its search box with the component ID, and selects **Exact ID search** to exclude other IDs that merely contain the same text. This resets callback mode and visibility filters to all callbacks and returns to the first page. Dictionary IDs also find matching wildcard callbacks. Components without a valid ID do not show this action.
 
 ## Editing props
 
