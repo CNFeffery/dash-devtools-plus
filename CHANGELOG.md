@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added direct component inspection from the State Snapshots selection tree, including components without IDs, with a source indicator and a return action that preserves snapshot selections, filters, draft names, and tree scroll position.
+
 ### Changed
 
 ### Fixed
