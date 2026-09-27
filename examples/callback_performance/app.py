@@ -20,13 +20,13 @@ POLL_INTERVAL_MILLISECONDS = 2_000
 POLL_DELAY_SECONDS = 0.35
 
 configure_devtools_plus(
-    default_locale="zh-CN",
+    default_locale="en",
     project_root=PROJECT_ROOT,
     editor_project_root=PROJECT_ROOT,
 )
 
 app = Dash(__name__, assets_folder=str(Path(__file__).parent / "assets"))
-app.title = "回调性能监控 · Dash Devtools Plus"
+app.title = "Callback Performance Monitor · Dash Devtools Plus"
 
 
 def callback_card(
@@ -55,7 +55,7 @@ def callback_card(
             control,
             html.Div(
                 [
-                    html.Span("最近结果", className="result-label"),
+                    html.Span("Latest result", className="result-label"),
                     html.Strong(initial_result, id=result_id),
                 ],
                 className="callback-result",
@@ -78,12 +78,13 @@ app.layout = html.Main(
                 html.Div(
                     [
                         html.P("CALLBACK PERFORMANCE LAB", className="eyebrow"),
-                        html.H1("三条回调，三种耗时特征。"),
+                        html.H1("Three callbacks, three timing patterns."),
                     ]
                 ),
                 html.P(
-                    "依次触发下方回调，再打开 Dash Dev Tools 中的 Devtools Plus → "
-                    "回调关系，对比执行次数、平均耗时、最近耗时与传输量。",
+                    "Trigger the callbacks below, then open Devtools Plus → "
+                    "Callback relationships in Dash Dev Tools to compare execution "
+                    "counts, average and latest durations, and transfer sizes.",
                     className="intro",
                 ),
             ],
@@ -93,45 +94,48 @@ app.layout = html.Main(
             [
                 callback_card(
                     "01",
-                    "服务端 · 递增耗时",
-                    "点击越多，等待越久",
-                    "每次点击增加 0.5 秒后端等待，最高 4 秒，用于观察耗时趋势。",
+                    "Server-side · Increasing delay",
+                    "More clicks, longer waits",
+                    "Each click adds 0.5 seconds of server delay, up to 4 seconds, "
+                    "so you can observe timing trends.",
                     html.Button(
-                        "触发服务端回调",
+                        "Run server-side callback",
                         id="server-delay-button",
                         n_clicks=0,
                         className="action-button",
                     ),
                     "server-delay-result",
-                    "等待点击",
+                    "Waiting for a click",
                     "#e05d3f",
                 ),
                 callback_card(
                     "02",
-                    "服务端 · 自动轮询",
-                    "固定节奏，固定等待",
-                    "每 2 秒自动触发一次，后端固定等待 0.35 秒，用于累积稳定样本。",
+                    "Server-side · Automatic polling",
+                    "Steady pace, fixed delay",
+                    "Runs automatically every 2 seconds with a fixed 0.35-second "
+                    "server delay to collect consistent samples.",
                     html.Div(
-                        [html.Span(className="pulse-dot"), "轮询运行中"],
+                        [html.Span(className="pulse-dot"), "Polling active"],
                         className="poll-status",
                     ),
                     "poll-result",
-                    "等待第一次轮询",
+                    "Waiting for the first poll",
                     "#16876f",
                 ),
                 callback_card(
                     "03",
-                    "浏览器端 · 即时响应",
-                    "只计数，不等待",
-                    "逻辑在浏览器中执行，不经过后端 sleep，可与服务端耗时直接对比。",
+                    "Clientside · Instant response",
+                    "Count clicks without waiting",
+                    "Runs in the browser with no server delay, so you can compare "
+                    "its timing directly with the server-side callbacks.",
                     html.Button(
-                        "触发浏览器端回调",
+                        "Run clientside callback",
                         id="client-button",
                         n_clicks=0,
                         className="action-button",
                     ),
                     "client-result",
-                    "等待点击",
+                    "Waiting for a click",
                     "#2f65b8",
                 ),
             ],
@@ -139,10 +143,11 @@ app.layout = html.Main(
         ),
         html.Footer(
             [
-                html.Span("观察建议"),
+                html.Span("What to look for"),
                 html.P(
-                    "先连续点击两侧按钮数次，再在回调详情底部查看最近 30 次执行的"
-                    "服务端与网络耗时。"
+                    "Click both buttons several times, then check the server and "
+                    "network durations for the last 30 executions at the bottom "
+                    "of the callback details."
                 ),
             ]
         ),
@@ -165,7 +170,7 @@ def handle_server_click(n_clicks: int | None) -> str:
         SERVER_DELAY_LIMIT_SECONDS,
     )
     time.sleep(delay)
-    return f"已完成第 {click_count} 次点击 · 本次等待 {delay:.1f} 秒"
+    return f"Click {click_count} completed · Delay: {delay:.1f} s"
 
 
 @app.callback(
@@ -178,14 +183,14 @@ def handle_poll(n_intervals: int | None) -> str:
 
     poll_count = int(n_intervals or 0)
     time.sleep(POLL_DELAY_SECONDS)
-    return f"已完成第 {poll_count} 次轮询 · 固定等待 {POLL_DELAY_SECONDS:.2f} 秒"
+    return f"Poll {poll_count} completed · Fixed delay: {POLL_DELAY_SECONDS:.2f} s"
 
 
 app.clientside_callback(
     """
     function (nClicks) {
         const clickCount = Number(nClicks || 0);
-        return `已完成第 ${clickCount} 次点击 · 浏览器端即时更新`;
+        return `Click ${clickCount} completed · Instant browser update`;
     }
     """,
     Output("client-result", "children"),

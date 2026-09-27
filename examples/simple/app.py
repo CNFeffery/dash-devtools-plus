@@ -14,22 +14,23 @@ from dash import Dash, Input, Output, dcc, html  # noqa: E402
 from dash_devtools_plus import configure_devtools_plus  # noqa: E402
 
 configure_devtools_plus(
-    default_locale="zh-CN",
+    default_locale="en",
     project_root=PROJECT_ROOT,
     editor_project_root=PROJECT_ROOT,
 )
 
 app = Dash(__name__, assets_folder=str(Path(__file__).parent / "assets"))
-app.title = "简单示例 · Dash Devtools Plus"
+app.title = "Simple Example · Dash Devtools Plus"
 
 app.layout = html.Main(
     [
         html.Header(
             [
                 html.P("SIMPLE CALLBACK SAMPLE", className="eyebrow"),
-                html.H1("两条回调，一眼看懂。"),
+                html.H1("Two callbacks at a glance."),
                 html.P(
-                    "一个 Python 服务端回调负责生成问候语，一个浏览器端回调负责更新信号强度。",
+                    "A Python server-side callback generates a greeting, while a "
+                    "clientside callback updates the signal strength.",
                     className="lede",
                 ),
             ],
@@ -42,11 +43,11 @@ app.layout = html.Main(
                         html.Span("01", className="step-number"),
                         html.Div(
                             [
-                                html.Label("你的名字", htmlFor="name-input"),
+                                html.Label("Your name", htmlFor="name-input"),
                                 dcc.Input(
                                     id="name-input",
-                                    value="Dash 开发者",
-                                    placeholder="输入名字",
+                                    value="Dash developer",
+                                    placeholder="Enter your name",
                                     debounce=True,
                                 ),
                             ],
@@ -65,7 +66,7 @@ app.layout = html.Main(
                         html.Span("02", className="step-number"),
                         html.Div(
                             [
-                                html.Label("浏览器端信号", htmlFor="signal-slider"),
+                                html.Label("Browser signal", htmlFor="signal-slider"),
                                 dcc.Slider(
                                     id="signal-slider",
                                     min=0,
@@ -89,7 +90,9 @@ app.layout = html.Main(
             ],
             className="demo-card client-card",
         ),
-        html.Footer("打开 Dash Dev Tools 中的 Devtools Plus，即可查看这两条回调关系。"),
+        html.Footer(
+            "Open Devtools Plus in Dash Dev Tools to explore these two callbacks."
+        ),
     ],
     className="simple-shell",
 )
@@ -99,14 +102,16 @@ app.layout = html.Main(
 def create_greeting(name: str | None) -> str:
     """Create a server-rendered greeting for the supplied name."""
 
-    return f"你好，{(name or '朋友').strip() or '朋友'}。这条消息来自 Python。"
+    return (
+        f"Hello, {(name or 'friend').strip() or 'friend'}! This message is from Python."
+    )
 
 
 app.clientside_callback(
     """
     function (value) {
         const level = Number(value || 0);
-        const label = level >= 80 ? "强" : level >= 40 ? "稳定" : "弱";
+        const label = level >= 80 ? "Strong" : level >= 40 ? "Steady" : "Weak";
         return [
             {width: `${level}%`},
             `${level}% · ${label}`

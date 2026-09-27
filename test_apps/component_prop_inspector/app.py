@@ -19,7 +19,7 @@ from dash_devtools_plus import configure_devtools_plus  # noqa: E402
 from test_components import ComponentPropCarrier  # noqa: E402
 
 configure_devtools_plus(
-    default_locale="zh-CN",
+    default_locale="en",
     project_root=PROJECT_ROOT,
     editor_project_root=PROJECT_ROOT,
 )

@@ -19,14 +19,14 @@ from fastapi import FastAPI  # noqa: E402
 from dash_devtools_plus import configure_devtools_plus  # noqa: E402
 
 configure_devtools_plus(
-    default_locale="zh-CN",
+    default_locale="en",
     project_root=PROJECT_ROOT,
     editor_project_root=PROJECT_ROOT,
 )
 
 app = Dash(__name__, backend="fastapi", websocket_callbacks=True)
 server: FastAPI = app.server
-app.title = "FastAPI 示例 · Dash Devtools Plus"
+app.title = "FastAPI Example · Dash Devtools Plus"
 
 
 @server.get("/api/health")
@@ -55,10 +55,11 @@ app.layout = html.Div(
             html.Header(
                 [
                     html.P("FASTAPI + WEBSOCKET", className="eyebrow"),
-                    html.H1("实时心跳，不需要轮询。"),
+                    html.H1("A live heartbeat without polling."),
                     html.P(
-                        "这个页面由 FastAPI 承载。持久 WebSocket 回调会读取滑块值，"
-                        "并把服务器时间主动推送回来。",
+                        "This page is served by FastAPI. A persistent WebSocket "
+                        "callback reads the slider value and pushes server time "
+                        "updates to the browser.",
                         className="lede",
                     ),
                 ],
@@ -86,7 +87,7 @@ app.layout = html.Div(
                             html.Span("02", className="step-number"),
                             html.Div(
                                 [
-                                    html.Label("推送间隔", htmlFor="refresh-rate"),
+                                    html.Label("Push interval", htmlFor="refresh-rate"),
                                     dcc.Slider(
                                         id="refresh-rate",
                                         min=0.5,
@@ -110,9 +111,9 @@ app.layout = html.Div(
             ),
             html.Footer(
                 [
-                    "持久回调：ctx.websocket.get_prop → set_props · ",
+                    "Persistent callback: ctx.websocket.get_prop → set_props · ",
                     html.A(
-                        "查看 FastAPI 健康检查", href="/api/health", target="_blank"
+                        "View FastAPI health check", href="/api/health", target="_blank"
                     ),
                 ]
             ),
@@ -144,7 +145,7 @@ async def stream_server_time() -> None:
         set_props("live-clock", {"children": now})
         set_props(
             "stream-status",
-            {"children": f"WebSocket 已推送 · 每 {seconds:g} 秒更新一次"},
+            {"children": f"WebSocket update received · Update interval: {seconds:g} s"},
         )
         await asyncio.sleep(seconds)
 

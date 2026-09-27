@@ -11,14 +11,14 @@ from dash import Dash, Input, Output, ctx, html  # noqa: E402
 from dash.exceptions import PreventUpdate  # noqa: E402
 from dash_devtools_plus import configure_devtools_plus  # noqa: E402
 
-configure_devtools_plus(default_locale="zh-CN", project_root=ROOT)
+configure_devtools_plus(default_locale="en", project_root=ROOT)
 app = Dash(__name__)
 app.layout = html.Div(
     [
-        html.Button("成功回调", id="success"),
-        html.Button("失败回调", id="failure"),
-        html.Button("无更新回调", id="no-update"),
-        html.Button("客户端回调", id="client"),
+        html.Button("Successful callback", id="success"),
+        html.Button("Failing callback", id="failure"),
+        html.Button("No-update callback", id="no-update"),
+        html.Button("Clientside callback", id="client"),
         html.Div(id="result"),
         html.Div(id="client-result"),
     ],

@@ -32,7 +32,7 @@ def test_simple_example_has_exactly_one_server_and_one_clientside_callback():
     assert len(dependencies) == 2
     assert sum(bool(item.get("clientside_function")) for item in dependencies) == 1
     assert sum(not item.get("clientside_function") for item in dependencies) == 1
-    assert create_greeting(" Dash ") == "你好，Dash。这条消息来自 Python。"
+    assert create_greeting(" Dash ") == "Hello, Dash! This message is from Python."
 
 
 def test_intermediate_example_is_one_cohesive_core_component_scenario():
@@ -48,9 +48,9 @@ def test_intermediate_example_is_one_cohesive_core_component_scenario():
         "hangzhou", 3, 2, ["museum", "food"], 8000
     )
     assert (total, per_person, gap) == ("¥5,540", "¥2,770", "¥2,460")
-    assert "杭州" in summary
+    assert "Hangzhou" in summary
     assert len(figure.data) == 1
-    assert "预算充足" in advice
+    assert "Within budget" in advice
 
 
 def test_callback_performance_example_has_three_contrasting_callbacks(monkeypatch):
@@ -62,8 +62,8 @@ def test_callback_performance_example_has_three_contrasting_callbacks(monkeypatc
     assert len(dependencies) == 3
     assert sum(bool(item.get("clientside_function")) for item in dependencies) == 1
     assert sum(not item.get("clientside_function") for item in dependencies) == 2
-    assert "第 3 次点击" in handle_server_click(3)
-    assert "第 7 次轮询" in handle_poll(7)
+    assert "Click 3 completed" in handle_server_click(3)
+    assert "Poll 7 completed" in handle_poll(7)
     assert sleeps == [1.5, POLL_DELAY_SECONDS]
 
 

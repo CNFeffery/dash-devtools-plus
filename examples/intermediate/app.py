@@ -15,24 +15,24 @@ import plotly.graph_objects as go  # noqa: E402
 from dash_devtools_plus import configure_devtools_plus  # noqa: E402
 
 configure_devtools_plus(
-    default_locale="zh-CN",
+    default_locale="en",
     project_root=PROJECT_ROOT,
     editor_project_root=PROJECT_ROOT,
 )
 
 app = Dash(__name__, assets_folder=str(Path(__file__).parent / "assets"))
-app.title = "旅行预算规划 · Dash Devtools Plus"
+app.title = "Travel Budget Planner · Dash Devtools Plus"
 
 DESTINATIONS = {
-    "hangzhou": {"label": "杭州", "stay": 620, "meal": 220, "accent": "#0b766e"},
-    "chengdu": {"label": "成都", "stay": 460, "meal": 180, "accent": "#c55b31"},
-    "xiamen": {"label": "厦门", "stay": 580, "meal": 210, "accent": "#1664a3"},
-    "dali": {"label": "大理", "stay": 420, "meal": 170, "accent": "#7a5a34"},
+    "hangzhou": {"label": "Hangzhou", "stay": 620, "meal": 220, "accent": "#0b766e"},
+    "chengdu": {"label": "Chengdu", "stay": 460, "meal": 180, "accent": "#c55b31"},
+    "xiamen": {"label": "Xiamen", "stay": 580, "meal": 210, "accent": "#1664a3"},
+    "dali": {"label": "Dali", "stay": 420, "meal": 170, "accent": "#7a5a34"},
 }
 ACTIVITIES = {
-    "museum": ("展馆与文化", 120),
-    "outdoor": ("户外体验", 260),
-    "food": ("特色餐饮", 320),
+    "museum": ("Museums and culture", 120),
+    "outdoor": ("Outdoor activities", 260),
+    "food": ("Local dining", 320),
 }
 
 app.layout = html.Main(
@@ -42,8 +42,11 @@ app.layout = html.Main(
                 html.Div(
                     [
                         html.P("WEEKEND FIELD NOTES", className="eyebrow"),
-                        html.H1("旅行预算规划器"),
-                        html.P("调整行程条件，即时比较住宿、餐饮、交通和体验支出。"),
+                        html.H1("Travel budget planner"),
+                        html.P(
+                            "Adjust your trip details to compare accommodation, "
+                            "meals, transport, and activity costs instantly."
+                        ),
                     ]
                 ),
                 html.Div(
@@ -57,8 +60,8 @@ app.layout = html.Main(
             [
                 html.Aside(
                     [
-                        html.H2("行程条件"),
-                        html.Label("目的地", htmlFor="destination"),
+                        html.H2("Trip details"),
+                        html.Label("Destination", htmlFor="destination"),
                         dcc.Dropdown(
                             id="destination",
                             value="hangzhou",
@@ -68,7 +71,7 @@ app.layout = html.Main(
                                 for key, item in DESTINATIONS.items()
                             ],
                         ),
-                        html.Label("住宿晚数", htmlFor="nights"),
+                        html.Label("Number of nights", htmlFor="nights"),
                         dcc.Slider(
                             id="nights",
                             min=1,
@@ -77,16 +80,16 @@ app.layout = html.Main(
                             value=3,
                             marks={i: str(i) for i in range(1, 8)},
                         ),
-                        html.Label("出行人数", htmlFor="travelers"),
+                        html.Label("Travelers", htmlFor="travelers"),
                         dcc.RadioItems(
                             id="travelers",
                             value=2,
                             options=[
-                                {"label": f"{i} 人", "value": i} for i in range(1, 5)
+                                {"label": str(i), "value": i} for i in range(1, 5)
                             ],
                             inline=True,
                         ),
-                        html.Label("体验偏好", htmlFor="activities"),
+                        html.Label("Preferred activities", htmlFor="activities"),
                         dcc.Checklist(
                             id="activities",
                             value=["museum", "food"],
@@ -95,7 +98,7 @@ app.layout = html.Main(
                                 for key, (label, _cost) in ACTIVITIES.items()
                             ],
                         ),
-                        html.Label("预算上限", htmlFor="budget"),
+                        html.Label("Budget limit (CNY)", htmlFor="budget"),
                         dcc.Input(
                             id="budget", type="number", min=1000, step=500, value=8000
                         ),
@@ -108,19 +111,19 @@ app.layout = html.Main(
                             [
                                 html.Div(
                                     [
-                                        html.Span("预计总支出"),
+                                        html.Span("Estimated total"),
                                         html.Strong(id="total-cost"),
                                     ]
                                 ),
                                 html.Div(
                                     [
-                                        html.Span("人均预算"),
+                                        html.Span("Cost per person"),
                                         html.Strong(id="per-person"),
                                     ]
                                 ),
                                 html.Div(
                                     [
-                                        html.Span("预算余量"),
+                                        html.Span("Remaining budget"),
                                         html.Strong(id="budget-gap"),
                                     ]
                                 ),
@@ -173,10 +176,10 @@ def plan_trip(
     budget = float(budget or 0)
     activity_cost = sum(ACTIVITIES[key][1] for key in (activities or [])) * travelers
     costs = {
-        "住宿": place["stay"] * nights,
-        "餐饮": place["meal"] * (nights + 1) * travelers,
-        "往返交通": 520 * travelers,
-        "体验": activity_cost,
+        "Accommodation": place["stay"] * nights,
+        "Meals": place["meal"] * (nights + 1) * travelers,
+        "Round-trip transport": 520 * travelers,
+        "Activities": activity_cost,
     }
     total = sum(costs.values())
     gap = budget - total
@@ -201,12 +204,20 @@ def plan_trip(
         font={"family": "Segoe UI, Microsoft YaHei, sans-serif", "color": "#24312e"},
     )
 
-    selected = "、".join(ACTIVITIES[key][0] for key in (activities or [])) or "自由探索"
-    summary = f"{travelers} 人前往{place['label']}，停留 {nights + 1} 天 {nights} 晚；体验重点为{selected}。"
+    selected = (
+        ", ".join(ACTIVITIES[key][0] for key in (activities or []))
+        or "Free exploration"
+    )
+    summary = (
+        f"{travelers} {'traveler' if travelers == 1 else 'travelers'} visiting "
+        f"{place['label']} for {nights + 1} days and "
+        f"{nights} {'night' if nights == 1 else 'nights'}. Activities: {selected}."
+    )
     advice = (
-        f"预算充足，还可预留 {currency(gap)} 作为机动支出。"
+        f"Within budget, with {currency(gap)} available for incidental expenses."
         if gap >= 0
-        else f"当前方案超出预算 {currency(abs(gap))}，可优先缩短住宿或减少付费体验。"
+        else f"This plan is {currency(abs(gap))} over budget. "
+        "Consider a shorter stay or fewer paid activities."
     )
     return (
         currency(total),
