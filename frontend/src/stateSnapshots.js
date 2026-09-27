@@ -38,7 +38,7 @@ function stringifyId(id) {
   }
 }
 
-function containsDashComponent(value, ancestors = new WeakSet()) {
+export function containsDashComponent(value, ancestors = new WeakSet()) {
   if (!value || typeof value !== "object") return false;
   if (isDashComponentShape(value)) return true;
   if (ancestors.has(value)) return false;

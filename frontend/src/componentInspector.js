@@ -147,12 +147,12 @@ export function sanitizeInspectorValue(value) {
 export function createNestedInspection(parent, component, propName, valuePath = []) {
   if (!parent || !isInspectableDashComponent(component)) return null;
   const rawProps = component.props || {};
-  const path = [
-    ...(Array.isArray(parent.path) ? parent.path : []),
+  const path = Array.isArray(parent.path) ? [
+    ...parent.path,
     "props",
     propName,
     ...valuePath,
-  ];
+  ] : null;
   return {
     namespace: component.namespace,
     type: component.type,
@@ -294,10 +294,10 @@ function findReferencePath(value, reference, path = [], ancestors = new WeakSet(
 
 // Resolve on demand from the live layout; snapshot props deliberately omit
 // structural values and must never be used as inspector data.
-export function inspectDashComponentReference(reference) {
-  if (!reference || !Array.isArray(reference.path)) return null;
+export function resolveDashComponentReference(reference) {
+  if (!reference) return null;
   let path = reference.path;
-  let layout = getLayout(path);
+  let layout = Array.isArray(path) ? getLayout(path) : null;
   if (!matchesReference(layout, reference)) {
     if (reference.id == null) return null;
     layout = getLayout(reference.id);
@@ -306,6 +306,13 @@ export function inspectDashComponentReference(reference) {
     path = findReferencePath(getLayout([]), reference);
     if (!path) return null;
   }
+  return {layout, path};
+}
+
+export function inspectDashComponentReference(reference) {
+  const resolved = resolveDashComponentReference(reference);
+  if (!resolved) return null;
+  const {layout, path} = resolved;
 
   const id = reference.id == null ? null
     : window.dash_component_api?.stringifyId?.(reference.id) ?? referenceId(reference.id);

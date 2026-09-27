@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {Breadcrumb, Button, Empty, Input, Tag, Tooltip} from "antd";
+import {Breadcrumb, Button, Empty, Input, Tag, Tooltip, message} from "antd";
 import {
   AimOutlined,
   ArrowLeftOutlined,
@@ -10,6 +10,7 @@ import {
   CodeOutlined,
   CopyOutlined,
   DownOutlined,
+  EditOutlined,
   RedoOutlined,
   RightOutlined,
   ScanOutlined,
@@ -22,6 +23,9 @@ import {
   formatInspectorPropValue,
   sortInspectorPropEntries,
 } from "./componentInspector";
+import PropEditorModal from "./PropEditorModal";
+import {readEditableProp} from "./componentPropEditor";
+import {containsDashComponent} from "./stateSnapshots";
 
 function valuePreview(value) {
   if (typeof value === "string") return value;
@@ -57,25 +61,31 @@ function DashComponentTarget({candidate, onInspect, t}) {
   );
 }
 
-function CopyablePropValue({children, copied, onCopy, t}) {
+function CopyablePropValue({children, copied, onCopy, onEdit, t}) {
   return (
     <div className="ddp-inspector-copyable-value">
       <div className="ddp-inspector-copyable-content">{children}</div>
-      <Tooltip title={copied ? t("propValueCopied") : t("copyPropValue")}>
-        <Button
-          className={`ddp-inspector-copy-value${copied ? " is-copied" : ""}`}
-          type="text"
-          size="small"
-          icon={copied ? <CheckOutlined /> : <CopyOutlined />}
-          aria-label={copied ? t("propValueCopied") : t("copyPropValue")}
-          onClick={onCopy}
-        />
-      </Tooltip>
+      <div className="ddp-inspector-prop-actions">
+        <Tooltip title={copied ? t("propValueCopied") : t("copyPropValue")}>
+          <Button
+            className={`ddp-inspector-copy-value${copied ? " is-copied" : ""}`}
+            type="text"
+            size="small"
+            icon={copied ? <CheckOutlined /> : <CopyOutlined />}
+            aria-label={copied ? t("propValueCopied") : t("copyPropValue")}
+            onClick={onCopy}
+          />
+        </Tooltip>
+        {onEdit && <Tooltip title={t("editPropValue")}>
+          <Button className="ddp-inspector-copy-value" type="text" size="small"
+            icon={<EditOutlined />} aria-label={t("editPropValue")} onClick={onEdit} />
+        </Tooltip>}
+      </div>
     </div>
   );
 }
 
-function JsonValue({copied, expanded, onCopy, onInspect, onToggle, t, value}) {
+function JsonValue({copied, expanded, onCopy, onEdit, onInspect, onToggle, t, value}) {
   const isStructured = value != null && typeof value === "object";
   const componentTargets = useMemo(
     () => isStructured ? findInspectableDashComponents(value) : [],
@@ -88,21 +98,21 @@ function JsonValue({copied, expanded, onCopy, onInspect, onToggle, t, value}) {
 
   if (typeof value === "boolean") {
     return (
-      <CopyablePropValue copied={copied} onCopy={onCopy} t={t}>
+      <CopyablePropValue copied={copied} onCopy={onCopy} onEdit={onEdit} t={t}>
         <Tag color={value ? "cyan" : "default"}>{formatInspectorPropValue(value)}</Tag>
       </CopyablePropValue>
     );
   }
   if (value == null || typeof value === "number") {
     return (
-      <CopyablePropValue copied={copied} onCopy={onCopy} t={t}>
+      <CopyablePropValue copied={copied} onCopy={onCopy} onEdit={onEdit} t={t}>
         <code className="ddp-inspector-primitive">{formatInspectorPropValue(value)}</code>
       </CopyablePropValue>
     );
   }
   if (typeof value === "string") {
     return (
-      <CopyablePropValue copied={copied} onCopy={onCopy} t={t}>
+      <CopyablePropValue copied={copied} onCopy={onCopy} onEdit={onEdit} t={t}>
         <span className="ddp-inspector-string">{value}</span>
       </CopyablePropValue>
     );
@@ -121,7 +131,7 @@ function JsonValue({copied, expanded, onCopy, onInspect, onToggle, t, value}) {
   );
   if (!componentTargets.length) {
     return (
-      <CopyablePropValue copied={copied} onCopy={onCopy} t={t}>
+      <CopyablePropValue copied={copied} onCopy={onCopy} onEdit={containsDashComponent(value) ? undefined : onEdit} t={t}>
         {structuredValue}
       </CopyablePropValue>
     );
@@ -241,11 +251,14 @@ export default function ComponentInspectorPanel({
   onInspectComponent,
   onNavigate,
   onStart,
+  onUpdateInspection,
   t,
 }) {
   const [query, setQuery] = useState("");
   const [expandedProps, setExpandedProps] = useState(() => new Set());
   const [copiedProp, setCopiedProp] = useState(null);
+  const [edit, setEdit] = useState(null);
+  const [api, contextHolder] = message.useMessage();
   const props = useMemo(() => sortInspectorPropEntries(inspection?.props)
     .filter(([name, value]) => {
       const needle = query.trim().toLocaleLowerCase();
@@ -257,6 +270,7 @@ export default function ComponentInspectorPanel({
     setQuery("");
     setExpandedProps(new Set());
     setCopiedProp(null);
+    setEdit(null);
   }, [inspection]);
 
   if (!inspection) return <EmptyInspector onStart={onStart} t={t} />;
@@ -277,8 +291,20 @@ export default function ComponentInspectorPanel({
     }
   };
 
+  const editProp = name => {
+    try { setEdit({...readEditableProp(inspection, name), name}); }
+    catch (error) { api.error(t(error.message)); }
+  };
+
   return (
     <section className="ddp-panel ddp-inspector-panel" aria-label={t("componentInspectorTitle")}>
+      {contextHolder}
+      {edit && <PropEditorModal edit={edit} t={t} onCancel={() => setEdit(null)}
+        onUpdated={updated => {
+          setEdit(null);
+          onUpdateInspection?.(updated);
+          api.success(t("propEditorUpdated"));
+        }} />}
       {origin === "snapshots" && (
         <div className="ddp-inspector-origin">
           <span><CameraOutlined />{t("inspectionFromSnapshot")}</span>
@@ -401,6 +427,7 @@ export default function ComponentInspectorPanel({
                     copied={copiedProp === name}
                     expanded={expandedProps.has(name)}
                     onCopy={() => copyPropValue(name, value)}
+                    onEdit={() => editProp(name)}
                     onInspect={(component, path) => onInspectComponent?.(component, name, path)}
                     onToggle={() => toggleProp(name)}
                     t={t}

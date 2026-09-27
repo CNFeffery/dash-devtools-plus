@@ -12,6 +12,8 @@
     "@ant-design/icons": "^6.3.4",
     "@antv/g2": "^5.4.8",
     "antd": "^6.6.3",
+    "json5": "^2.2.3",
+    "monaco-editor": "^0.55.1",
     "simple-icons": "^16.31.0"
   },
   "devDependencies": {

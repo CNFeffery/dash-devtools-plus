@@ -18,7 +18,7 @@ import ComponentProbeOverlay from "./ComponentProbeOverlay";
 import DependenciesPanel from "./DependenciesPanel";
 import DevtoolsAppearancePanel from "./DevtoolsAppearancePanel";
 import RuntimeEnvironmentPanel from "./RuntimeEnvironmentPanel";
-import {createNestedInspection} from "./componentInspector";
+import {createNestedInspection, inspectDashComponentReference} from "./componentInspector";
 import ServerMetricsPanel, {useServerMetrics} from "./ServerMetricsPanel";
 import StateSnapshotsPanel from "./StateSnapshotsPanel";
 import {createTranslator, normalizeLocale} from "./i18n";
@@ -145,6 +145,13 @@ function EnabledDevtoolsPlus({
   const navigateInspectionTrail = useCallback((index) => {
     setInspectionTrail((current) => current.slice(0, index + 1));
   }, []);
+  const updateInspection = useCallback((updated) => {
+    setInspectionTrail(current => current.map((item, index) => {
+      if (index === current.length - 1 && updated) return {...updated, source: item.source};
+      const refreshed = inspectDashComponentReference(item);
+      return refreshed ? {...refreshed, source: item.source} : item;
+    }));
+  }, []);
 
   return (
     <ConfigProvider locale={antdLocale} theme={antdTheme}>
@@ -250,6 +257,7 @@ function EnabledDevtoolsPlus({
                     onInspectComponent={inspectNestedComponent}
                     onNavigate={navigateInspectionTrail}
                     onStart={startInspection}
+                    onUpdateInspection={updateInspection}
                     t={t}
                   />
                 ),
