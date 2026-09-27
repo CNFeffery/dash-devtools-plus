@@ -1610,13 +1610,6 @@
   white-space: nowrap;
 }
 
-.ddp-detail-section {
-  border: 1px solid var(--ddp-line);
-  border-radius: 13px;
-  margin-top: 14px;
-  padding: 14px;
-}
-
 .ddp-detail-section-heading {
   align-items: flex-start;
   display: flex;
@@ -1661,7 +1654,11 @@
 .ddp-detail-registration-grid {
   display: grid;
   gap: 9px;
-  grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 0.7fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ddp-detail-registration-grid > .is-signature {
+  grid-column: 1 / -1;
 }
 
 .ddp-detail-registration-grid > div {
@@ -4184,8 +4181,6 @@
   .ddp-detail-source-card {grid-template-columns: 36px minmax(0, 1fr);}
   .ddp-detail-function-name {display: none;}
   .ddp-detail-role-summary {grid-template-columns: repeat(2, minmax(0, 1fr));}
-  .ddp-detail-registration-grid {grid-template-columns: repeat(2, minmax(0, 1fr));}
-  .ddp-detail-registration-grid > .is-signature {grid-column: 1 / -1;}
   .ddp-detail-clientside-meta {grid-template-columns: 1fr;}
   .ddp-metric-grid {grid-template-columns: repeat(2, minmax(0, 1fr));}
   .ddp-resource-main-grid {grid-template-columns: 1fr;}

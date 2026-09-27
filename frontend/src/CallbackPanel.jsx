@@ -559,7 +559,7 @@ function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
         </div>
       </section>
 
-      <section className="ddp-detail-section" aria-label={t("detailRegistration")}>
+      <section className="ddp-detail-refined ddp-detail-registration" aria-label={t("detailRegistration")}>
         <div className="ddp-detail-section-heading">
           <div>
             <span>{t("detailMetadata")}</span>
