@@ -300,6 +300,7 @@ export default {
   durationHours: "小时",
   durationMinutes: "分钟",
   componentInspectorNav: "组件探查",
+  relatedCallbacks: "相关回调关系",
   componentInspectorEyebrow: "页面组件映射",
   componentInspectorTitle: "组件探查器",
   componentInspectorEmptyTitle: "在页面中选择一个组件",

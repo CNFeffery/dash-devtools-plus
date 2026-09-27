@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added a Related callbacks action to the Component Inspector for components with valid IDs, opening the callback workspace with the ID prefilled and supporting dictionary and wildcard callback IDs.
 - Added direct component inspection from the State Snapshots selection tree, including components without IDs, with a source indicator and a return action that preserves snapshot selections, filters, draft names, and tree scroll position.
 - Added runtime editing of non-component props from both page inspection and State Snapshots, with automatic type detection, string, number, boolean, and JSON modes, and live updates through Dash's `set_props` API.
 - Added a locally bundled Monaco Editor with inline diagnostics, validation on apply, and undoable formatting for JSON and string content. JSON-like objects and arrays are normalized to standard JSON, while ordinary text retains its punctuation and only has trailing whitespace and line endings cleaned up.

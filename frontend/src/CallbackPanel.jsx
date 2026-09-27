@@ -36,6 +36,7 @@ import {
 } from "./callbackTablePreferences";
 import {endpointUrl, normalizeCallbacks} from "./utils";
 import {useCallbackPerformanceSnapshot} from "./useCallbackPerformance";
+import {createCallbackQueryMatcher} from "./callbackSearch";
 
 const PAGE_SIZE = 8;
 const SELECT_CLASS_NAMES = {popup: {root: "ddp-callback-select-popup"}};
@@ -634,11 +635,12 @@ function CallbackDetailModalContent({row, open, onClose, onAfterClose, t}) {
   );
 }
 
-export default function CallbackPanel({endpoint, isActive, t, accentColor = "#119DFF"}) {
+export default function CallbackPanel({endpoint, isActive, searchRequest, t, accentColor = "#119DFF"}) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [mode, setMode] = useState("all");
   const [visibility, setVisibility] = useState("all");
   const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(() =>
@@ -646,6 +648,16 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
   );
   const [selectedCallback, setSelectedCallback] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  useEffect(() => {
+    if (!searchRequest) return;
+    setQuery(searchRequest.query);
+    setMode("all");
+    setVisibility("all");
+    setPage(1);
+    setDetailOpen(false);
+  }, [searchRequest]);
+
+  useEffect(() => setPage(1), [query, mode, visibility]);
   const performanceSnapshot = useCallbackPerformanceSnapshot(isActive && showPerformanceMetrics);
   const selectStyles = useMemo(
     () => ({popup: {root: {"--ddp-primary": accentColor}}}),
@@ -705,14 +717,13 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
   }, [isActive, showPerformanceMetrics, hasExecutionTimes]);
 
   const filteredRows = useMemo(() => {
-    const needle = query.trim().toLowerCase();
+    const matchesQuery = createCallbackQueryMatcher(query);
     return rowsWithPerformance.filter((row) => {
       const matchesMode = mode === "all" || row.mode === mode;
       const matchesVisibility =
         visibility === "all" ||
         (visibility === "hidden" ? row.hidden : !row.hidden);
-      const haystack = `${row.outputText} ${row.inputText} ${row.stateText} ${row.sourceText} ${row.mode}`.toLowerCase();
-      return matchesMode && matchesVisibility && (!needle || haystack.includes(needle));
+      return matchesMode && matchesVisibility && matchesQuery(row);
     });
   }, [rowsWithPerformance, query, mode, visibility]);
   const visibleCountLabel = filteredRows.length === 1
@@ -947,6 +958,8 @@ export default function CallbackPanel({endpoint, isActive, t, accentColor = "#11
           scroll={{x: showPerformanceMetrics ? 2126 : 1350}}
           locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("emptyCallbacks")} />}}
           pagination={{
+            current: page,
+            onChange: setPage,
             pageSize: PAGE_SIZE,
             showSizeChanger: false,
             position: ["bottomRight"],

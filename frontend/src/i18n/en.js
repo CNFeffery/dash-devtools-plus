@@ -300,6 +300,7 @@ export default {
   durationHours: "h",
   durationMinutes: "m",
   componentInspectorNav: "Component inspector",
+  relatedCallbacks: "Related callbacks",
   componentInspectorEyebrow: "Page component mapping",
   componentInspectorTitle: "Component inspector",
   componentInspectorEmptyTitle: "Select a component on the page",

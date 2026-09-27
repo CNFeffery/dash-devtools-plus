@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {Breadcrumb, Button, Empty, Input, Tag, Tooltip, message} from "antd";
 import {
   AimOutlined,
+  ApartmentOutlined,
   ArrowLeftOutlined,
   BorderOutlined,
   BranchesOutlined,
@@ -26,6 +27,7 @@ import {
 import PropEditorModal from "./PropEditorModal";
 import {readEditableProp} from "./componentPropEditor";
 import {containsDashComponent} from "./stateSnapshots";
+import {componentCallbackQuery} from "./callbackSearch";
 
 function valuePreview(value) {
   if (typeof value === "string") return value;
@@ -251,6 +253,7 @@ export default function ComponentInspectorPanel({
   onInspectComponent,
   onNavigate,
   onStart,
+  onShowCallbacks,
   onUpdateInspection,
   t,
 }) {
@@ -274,6 +277,7 @@ export default function ComponentInspectorPanel({
   }, [inspection]);
 
   if (!inspection) return <EmptyInspector onStart={onStart} t={t} />;
+  const callbackQuery = componentCallbackQuery(inspection.id);
 
   const toggleProp = (name) => setExpandedProps((current) => {
     const next = new Set(current);
@@ -330,6 +334,8 @@ export default function ComponentInspectorPanel({
               {t("backToParentComponent")}
             </Button>
           )}
+          {callbackQuery != null && <Button icon={<ApartmentOutlined />}
+            onClick={() => onShowCallbacks?.(callbackQuery)}>{t("relatedCallbacks")}</Button>}
           <Button icon={<RedoOutlined />} onClick={onStart}>{t("inspectAgain")}</Button>
         </div>
       </div>

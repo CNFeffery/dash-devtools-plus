@@ -27,6 +27,8 @@ The inspection click is intercepted before it reaches the target control, so sel
 
 Dash development-tool namespaces are excluded so the inspector focuses on the application rather than the tool UI itself.
 
+For components with a valid ID, **Related callbacks** beside **Inspect again** opens the callback workspace and fills its search box with the component ID. This resets callback mode and visibility filters to all callbacks and returns to the first page. Dictionary IDs also find matching wildcard callbacks. Components without a valid ID do not show this action.
+
 ## Editing props
 
 Non-component props have an edit button beside the copy button. Both page picking and inspection from state snapshots open the same editor for the component's current live value.

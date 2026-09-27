@@ -80,6 +80,7 @@ function EnabledDevtoolsPlus({
   const [locale, setLocale] = useState(() => initialLocale(defaultLocale));
   const [nativeDevtoolsTheme, setNativeDevtoolsTheme] = useState(initialNativeDevtoolsTheme);
   const [activeTab, setActiveTab] = useState("callbacks");
+  const [callbackSearchRequest, setCallbackSearchRequest] = useState(null);
   const [inspectionTrail, setInspectionTrail] = useState([]);
   const [inspectionOrigin, setInspectionOrigin] = useState(null);
   const inspection = inspectionTrail[inspectionTrail.length - 1] || null;
@@ -135,6 +136,11 @@ function EnabledDevtoolsPlus({
     setActiveTab("inspector");
   }, []);
   const returnToSnapshots = useCallback(() => setActiveTab("snapshots"), []);
+  const showComponentCallbacks = useCallback((query) => {
+    // A new request also reapplies the same ID after the user edits the search.
+    setCallbackSearchRequest({query});
+    setActiveTab("callbacks");
+  }, []);
   const inspectNestedComponent = useCallback((component, propName, valuePath) => {
     setInspectionTrail((current) => {
       const parent = current[current.length - 1];
@@ -239,6 +245,7 @@ function EnabledDevtoolsPlus({
                 children: (
                   <CallbackPanel
                     endpoint={callbacksEndpoint}
+                    searchRequest={callbackSearchRequest}
                     isActive={isOpen && activeTab === "callbacks"}
                     accentColor={accentColor}
                     t={t}
@@ -257,6 +264,7 @@ function EnabledDevtoolsPlus({
                     onInspectComponent={inspectNestedComponent}
                     onNavigate={navigateInspectionTrail}
                     onStart={startInspection}
+                    onShowCallbacks={showComponentCallbacks}
                     onUpdateInspection={updateInspection}
                     t={t}
                   />
