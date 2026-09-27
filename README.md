@@ -29,7 +29,7 @@ Start a Dash application in debug mode, then select **Devtools Plus** from the n
 
 ## ⚡ Quick start
 
-This checkout and its documentation describe **0.1.4 (unreleased)**. The command below installs the latest published release; to try the current development version, follow the [source installation instructions](./docs/en/quick-start.md#try-014-before-release).
+The command below installs the latest published release; to try the current development version, follow the [source installation instructions](./docs/en/quick-start.md#install-from-source).
 
 ```bash
 pip install dash-devtools-plus -U

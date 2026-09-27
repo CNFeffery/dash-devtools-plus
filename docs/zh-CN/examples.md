@@ -1,6 +1,6 @@
 # 🧪 示例应用
 
-0.1.4 开发版源码提供五个示例应用，均使用仓库根目录配置 `configure_devtools_plus`。建议先按[源码安装说明](quick-start.md#体验未发布的-014)安装当前版本；完整示例还需要 `feffery-antd-components` 和 `dash-mantine-components`。
+仓库源码提供五个示例应用，均使用仓库根目录配置 `configure_devtools_plus`。建议先按[源码安装说明](quick-start.md#从源码安装)安装当前版本；完整示例还需要 `feffery-antd-components` 和 `dash-mantine-components`。
 
 | 示例 | 用途 | 运行命令 |
 | --- | --- | --- |
@@ -25,6 +25,6 @@
 
 ## 完整回调实验室
 
-0.1.4 源码中的完整示例有意包含原生报错测试控件、后台与 WebSocket 注册形态，以及 131 条回调。它适合验收与压力检查，不建议将其刻意扩张的回调拓扑直接照搬到生产应用。
+源码中的完整示例有意包含原生报错测试控件、后台与 WebSocket 注册形态，以及 131 条回调。它适合验收与压力检查，不建议将其刻意扩张的回调拓扑直接照搬到生产应用。
 
 ![完整回调实验室](../../imgs/docs/comprehensive-example.webp)

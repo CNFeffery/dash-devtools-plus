@@ -2,7 +2,7 @@
 
 这里是 Dash Devtools Plus 的中文探索地图：从首次打开到逐项深入查看，一路都有清晰指引 ✨。
 
-这些说明及更新后的回调截图对应 **0.1.4（未发布）**。运行当前源码请参阅[快速开始](quick-start.md#体验未发布的-014)，版本摘要见 [CHANGELOG](../../CHANGELOG.md)。
+运行当前源码请参阅[快速开始](quick-start.md#从源码安装)，版本摘要见 [CHANGELOG](../../CHANGELOG.md)。
 
 | 主题 | 说明 |
 | --- | --- |

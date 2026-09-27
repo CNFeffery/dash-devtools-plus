@@ -16,9 +16,9 @@ pip install dash-devtools-plus -U
 
 本包提供 `dash_hooks` 入口点。安装后 Dash 会自动发现并注册该集成；使用默认配置时，无需导入 `dash_devtools_plus`，也无需调用 `configure_devtools_plus()`。
 
-## 体验未发布的 0.1.4
+## 从源码安装
 
-**0.1.4 尚未发布**。在仓库根目录中，将当前源码安装到所用 Python 环境：
+在仓库根目录中，将当前源码安装到所用 Python 环境：
 
 ```bash
 python -m pip install -e ".[dev]"

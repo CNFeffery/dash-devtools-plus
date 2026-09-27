@@ -2,7 +2,7 @@
 
 Your friendly map for exploring Dash Devtools Plus—from a first launch to a focused deep dive. ✨
 
-These guides and the updated callback screenshots describe **0.1.4 (unreleased)**. See [Quick start](quick-start.md#try-014-before-release) to run this checkout, and [Changelog](../../CHANGELOG.md) for the release summary.
+See [Quick start](quick-start.md#install-from-source) to run this checkout, and [Changelog](../../CHANGELOG.md) for the release summary.
 
 | Topic | Description |
 | --- | --- |

@@ -1,6 +1,6 @@
 # 🧪 Example applications
 
-The 0.1.4 development checkout includes five runnable applications. Each calls `configure_devtools_plus` with the repository root. Use the [source installation instructions](quick-start.md#try-014-before-release) to run the current version; the comprehensive example additionally requires `feffery-antd-components` and `dash-mantine-components`.
+The repository includes five runnable applications. Each calls `configure_devtools_plus` with the repository root. Use the [source installation instructions](quick-start.md#install-from-source) to run the current version; the comprehensive example additionally requires `feffery-antd-components` and `dash-mantine-components`.
 
 | Example | Purpose | Run command |
 | --- | --- | --- |
@@ -25,6 +25,6 @@ Samples come from real executions in the current browser page. Reloading starts 
 
 ## Comprehensive laboratory
 
-The comprehensive example deliberately contains native error-test controls, background and WebSocket registration shapes, and 131 callbacks in the 0.1.4 checkout. Use it for acceptance checks; do not copy its intentionally broad topology wholesale into a production app.
+The comprehensive example deliberately contains native error-test controls, background and WebSocket registration shapes, and 131 callbacks in the repository. Use it for acceptance checks; do not copy its intentionally broad topology wholesale into a production app.
 
 ![The comprehensive callback laboratory](../../imgs/docs/comprehensive-example.webp)

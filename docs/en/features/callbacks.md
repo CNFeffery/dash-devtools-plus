@@ -2,7 +2,7 @@
 
 Follow every callback edge without losing the thread: this workspace turns Dash's registered callback list into a searchable development view. ✨
 
-This guide and its screenshots cover **0.1.4 (unreleased)**. The screenshots use real executions from the bundled examples; timings depend on the local environment.
+The screenshots use real executions from the bundled examples; timings depend on the local environment.
 
 ![Callback relationships](../../../imgs/docs/callbacks.webp)
 
@@ -45,7 +45,7 @@ Click the fullscreen icon at the top right of **Callback data flow** to enlarge 
 
 ## ⚡ Callback performance
 
-![Live callback performance details in v0.1.4](../../../imgs/docs/callback-performance.webp)
+![Live callback performance details](../../../imgs/docs/callback-performance.webp)
 
 The performance workspace sits at the bottom of callback details. A prominent latest-duration reading includes completion status and its percentage difference from the session average. A stacked duration chart places server and network time in context, followed by a four-metric strip with explicit sample counts. Click a chart legend to show or hide its series; the selection stays in place as new executions arrive. Transfer totals stay compact, custom timing stages expand on demand, and the information button explains measurement scope. On narrow screens, the overview stacks vertically and execution records scroll within their own table. It covers the current browser page lifecycle and includes:
 
