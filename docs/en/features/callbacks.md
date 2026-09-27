@@ -14,6 +14,10 @@ Callback type and source location stay pinned to the left while the remaining co
 
 Use **Show performance metrics** to display or hide Last execution, Executions, Average, Latest, Minimum and Maximum together. The preference is persisted in the current browser. Each metric has its own flat, sortable column. Extrema tooltips explain that only captured individual timings are included.
 
+![Callback relationships with performance metrics enabled](../../../imgs/docs/callbacks-metrics.webp)
+
+The list above shows performance metrics after three real pipeline runs in the example. Scroll the table horizontally to see the remaining performance columns and dependency fields.
+
 ## 📖 Read a callback row
 
 | Column | Meaning |
