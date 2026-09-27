@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {buildEnvironmentReport, collectBrowserEnvironment, parseBrowser} from "../src/runtimeEnvironment.js";
+import {buildEnvironmentReport, collectBrowserEnvironment, formatDependency, parseBrowser} from "../src/runtimeEnvironment.js";
 
 test("browser parser recognizes current mainstream browser tokens", () => {
   assert.deepEqual(
@@ -46,4 +46,24 @@ test("environment report includes app, system, browser, and dependency details",
   assert.match(report, /Browser: Chrome 140/);
   assert.match(report, /```text\ndash==4\.0\.0\n```/);
   assert.doesNotMatch(report, /Hostname|User agent|Time zone|CPU threads/);
+});
+
+test("unknown versions remain visible without pretending to be installable pins", () => {
+  assert.equal(formatDependency({name: "Widget", version: null}), "Widget (version unknown)");
+  const report = buildEnvironmentReport({dependencies: {libraries: [{name: "Widget", version: null}]}}, {});
+  assert.match(report, /Widget \(version unknown\)/);
+  assert.doesNotMatch(report, /==null|==undefined/);
+});
+
+test("partial detection and automatic hooks are preserved in copied reports", () => {
+  const report = buildEnvironmentReport({dependencies: {
+    libraries: [],
+    scan: {status: "partial", issues: [{module: "views.page", reason: "source-unreadable"}]},
+    runtimeHooks: [{name: "auto-hook", version: "1.0"}],
+  }}, {});
+  assert.match(report, /Detection incomplete/);
+  assert.match(report, /views.page: source-unreadable/);
+  assert.match(report, /Additional active Dash hooks/);
+  assert.match(report, /auto-hook==1.0/);
+  assert.doesNotMatch(report, /None detected/);
 });

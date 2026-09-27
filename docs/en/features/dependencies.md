@@ -27,3 +27,9 @@ Rows for Dash component and Hook libraries can expand:
 When an ordered Hook type has multiple registrations, the workspace calls out the affected types and shows their current effective order. Without explicit priorities, that order should not be assumed to stay identical across environments.
 
 The inventory applies the configured `project_root` boundary and excludes common virtual-environment locations. Project-local modules—including Hooks registered manually from application source—are not presented as “Other” or external dependencies; a third-party import must map to an installed Python distribution to enter the inventory. It is an import-based development inventory, not a lock-file or vulnerability audit.
+
+Without `project_root`, discovery starts from the Dash application module (including FastAPI apps), with callable layouts and callbacks as additional entry points. It follows loaded local modules rather than scanning every file or every module in the process. Static layouts also provide component evidence. Project-root selection is stable across process restarts; component implementation files are not used as application roots.
+
+Source parsing supports Python encoding declarations, UTF-8 BOMs, relative imports and literal `importlib.import_module()` / `__import__()` calls. Refresh takes a new source and installation-metadata snapshot, so newly loaded pages and updated package metadata can be detected. Arbitrary computed imports cannot always be resolved. Unreadable source or unresolved package ownership produces an **incomplete detection** notice with module names and reasons, without exposing filesystem paths.
+
+Distribution attribution checks module file ownership, including namespace providers and editable-install metadata when available. Active Hook packages that the application did not directly import appear separately, based on the application's Hook registration snapshot. They are not included in direct-import category counts.

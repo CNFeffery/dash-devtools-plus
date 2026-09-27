@@ -13,6 +13,8 @@ import {
   WarningOutlined,
 } from "@ant-design/icons";
 import {endpointUrl} from "./utils";
+import DependencyScanNotice from "./DependencyScanNotice";
+import {formatDependency} from "./runtimeEnvironment";
 
 const PAGE_SIZE = 12;
 const SELECT_CLASS_NAMES = {popup: {root: "ddp-callback-select-popup"}};
@@ -356,6 +358,12 @@ export default function DependenciesPanel({endpoint, isActive, t, accentColor = 
         </div>
       )}
       {runtimeUnavailable && <Alert className="ddp-inline-alert" type="warning" showIcon message={t("hookRuntimeUnavailable")} />}
+      <DependencyScanNotice scan={inventory?.scan} t={t} />
+      {inventory?.runtimeHooks?.length > 0 && <Alert
+        className="ddp-inline-alert" type="info" showIcon
+        message={t("dependencyRuntimeHooks")}
+        description={inventory.runtimeHooks.map((library) => formatDependency(library, t("dependencyVersionUnknown"))).join(", ")}
+      />}
       {error && <Alert className="ddp-inline-alert" type="error" showIcon message={t("dependencyError")} action={<Button size="small" onClick={load}>{t("refresh")}</Button>} />}
 
       <div className="ddp-dependency-table-wrap">
@@ -379,7 +387,7 @@ export default function DependenciesPanel({endpoint, isActive, t, accentColor = 
             hideOnSinglePage: filteredLibraries.length <= PAGE_SIZE,
             showTotal: (total) => `${total} ${t("dependencyCount")}`,
           }}
-          locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("dependencyEmpty")} />}}
+          locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(inventory?.scan?.status === "partial" && !libraries.length ? "dependencyScanPartial" : "dependencyEmpty")} />}}
         />
       </div>
     </section>

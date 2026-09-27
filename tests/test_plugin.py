@@ -206,11 +206,12 @@ def test_dependency_inventory_does_not_treat_custom_modules_as_other(
     custom_module.__file__ = str(custom_source)
     monkeypatch.setitem(sys.modules, "custom_tools", custom_module)
     monkeypatch.setattr(plugin, "_component_library_metadata", lambda: [])
-    monkeypatch.setattr(plugin, "_module_distribution_map", lambda: {})
+    from dash_devtools_plus.dependency_inventory import ImportScan
+
     monkeypatch.setattr(
         plugin,
-        "_application_direct_imports",
-        lambda app: ({"custom_tools"}, set()),
+        "scan_application",
+        lambda app, root: ImportScan(tmp_path, imports={"custom_tools"}),
     )
     monkeypatch.setattr(
         plugin,

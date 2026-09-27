@@ -32,11 +32,19 @@ function valueOrUnknown(value) {
   return value === null || value === undefined || value === "" ? "Unknown" : value;
 }
 
+export function formatDependency(dependency, unknownVersion = "version unknown") {
+  return dependency.version
+    ? `${dependency.name}==${dependency.version}`
+    : `${dependency.name} (${unknownVersion})`;
+}
+
 export function buildEnvironmentReport(environment, browser) {
   const app = environment?.application || {};
   const python = environment?.python || {};
   const server = environment?.server || {};
   const dependencies = environment?.dependencies?.libraries || [];
+  const scan = environment?.dependencies?.scan;
+  const runtimeHooks = environment?.dependencies?.runtimeHooks || [];
   const generatedAt = environment?.generatedAt
     ? new Date(environment.generatedAt).toISOString()
     : new Date().toISOString();
@@ -67,11 +75,22 @@ export function buildEnvironmentReport(environment, browser) {
     "```text",
   ];
 
-  if (!dependencies.length) lines.push("None detected");
+  if (!dependencies.length) lines.push(scan?.status === "partial" ? "Detection incomplete" : "None detected");
   for (const dependency of dependencies) {
-    lines.push(`${dependency.name}==${dependency.version}`);
+    lines.push(formatDependency(dependency));
   }
   lines.push("```");
+
+  if (scan?.status === "partial") {
+    lines.push("", "Dependency detection is incomplete:");
+    for (const issue of scan.issues || []) {
+      lines.push(`- ${issue.module}: ${issue.reason}`);
+    }
+  }
+  if (runtimeHooks.length) {
+    lines.push("", "## Additional active Dash hooks", "Loaded through hook registration; not directly imported by application source.", "```text");
+    lines.push(...runtimeHooks.map((item) => formatDependency(item)), "```");
+  }
 
   return `${lines.join("\n")}\n`;
 }

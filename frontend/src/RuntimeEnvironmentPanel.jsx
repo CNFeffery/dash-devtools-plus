@@ -11,7 +11,8 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import {endpointUrl} from "./utils";
-import {buildEnvironmentReport, collectBrowserEnvironment} from "./runtimeEnvironment";
+import {buildEnvironmentReport, collectBrowserEnvironment, formatDependency} from "./runtimeEnvironment";
+import DependencyScanNotice from "./DependencyScanNotice";
 
 function SignalCard({icon, label, value, detail, tone}) {
   return (
@@ -92,6 +93,8 @@ export default function RuntimeEnvironmentPanel({endpoint, isActive, t}) {
   const python = environment?.python || {};
   const server = environment?.server || {};
   const dependencies = environment?.dependencies?.libraries || [];
+  const scan = environment?.dependencies?.scan;
+  const runtimeHooks = environment?.dependencies?.runtimeHooks || [];
   const browserName = [browser.name, browser.version].filter(Boolean).join(" ");
   const operatingSystem = [server.operatingSystem, server.osRelease].filter(Boolean).join(" ");
 
@@ -152,11 +155,18 @@ export default function RuntimeEnvironmentPanel({endpoint, isActive, t}) {
               <SectionHeading icon={<ProductOutlined />} eyebrow={t("applicationImports")} title={t("environmentDependencies")} />
             </div>
             <p>{t("environmentDependenciesHint")}</p>
+            <DependencyScanNotice scan={scan} t={t} />
             <pre className="ddp-environment-dependency-list">
               {dependencies.length
-                ? dependencies.map((library) => `${library.name}==${library.version}`).join("\n")
-                : t("environmentNoDependencies")}
+                ? dependencies.map((library) => formatDependency(library, t("dependencyVersionUnknown"))).join("\n")
+                : t(scan?.status === "partial" ? "dependencyScanPartial" : "environmentNoDependencies")}
             </pre>
+            {runtimeHooks.length > 0 && <>
+              <p>{t("dependencyRuntimeHooks")}</p>
+              <pre className="ddp-environment-dependency-list">
+                {runtimeHooks.map((library) => formatDependency(library, t("dependencyVersionUnknown"))).join("\n")}
+              </pre>
+            </>}
           </article>
         </div>
       )}
