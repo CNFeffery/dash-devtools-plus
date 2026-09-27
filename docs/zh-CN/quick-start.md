@@ -22,10 +22,12 @@ pip install dash-devtools-plus -U
 
 ```bash
 python -m pip install -e ".[dev]"
+npm ci
+npm run build
 python examples/callback_performance/app.py
 ```
 
-仓库已包含前端构建产物。如果修改前端源码，请在所用 Node.js 环境中执行 `npm ci` 和 `npm run build`，然后刷新页面。访问 <http://127.0.0.1:8050>，即可体验当前版本的回调监控与全屏拓扑。
+前端构建产物由 Git 忽略，首次检出仓库后，请先在所用 Node.js 环境中执行 `npm ci` 和 `npm run build`，再启动示例。修改前端源码后也需要重新构建，然后刷新页面。访问 <http://127.0.0.1:8050>，即可体验当前版本的回调监控与全屏拓扑。
 
 ## 🪄 最小应用（默认配置）
 

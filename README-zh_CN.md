@@ -121,9 +121,10 @@ pip install "dash-devtools-plus[fastapi]"
 按仓库约定配置开发环境后，运行：
 
 ```bash
-python -m pytest
+npm ci
 npm run test:frontend
 npm run build
+python -m pytest
 ```
 
 Python 代码使用 Ruff 检查：
@@ -133,7 +134,7 @@ ruff check .
 ruff format --check .
 ```
 
-前端构建产物会写入 `dash_devtools_plus/assets/`；修改前端源码后应重新构建并提交这些发布资源。
+前端构建产物会写入 `dash_devtools_plus/assets/`，该目录由 Git 忽略。修改前端源码后，以及运行 Python 测试、示例或 `python -m build` 前，请先执行 `npm run build`。CI 会在测试和打包前生成这些资源；发布的 Python 包仍包含它们。
 
 ## 🗺️ 文档导航
 

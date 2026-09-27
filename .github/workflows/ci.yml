@@ -16,6 +16,7 @@ concurrency:
 jobs:
   python-tests:
     name: Python ${{ matrix.python-version }}
+    needs: frontend
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -23,6 +24,10 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-assets
+          path: dash_devtools_plus/assets/
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -42,9 +47,14 @@ jobs:
 
   python-quality:
     name: Python quality and package build
+    needs: frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-assets
+          path: dash_devtools_plus/assets/
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -63,6 +73,7 @@ jobs:
 
   fastapi-backend:
     name: FastAPI backend / Python ${{ matrix.python-version }}
+    needs: frontend
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -70,6 +81,10 @@ jobs:
         python-version: ["3.9", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-assets
+          path: dash_devtools_plus/assets/
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -99,5 +114,14 @@ jobs:
         run: npm run test:frontend
       - name: Build frontend bundle
         run: npm run build
-      - name: Verify generated assets are committed
-        run: git diff --exit-code -- dash_devtools_plus/assets/
+      - name: Verify generated assets exist
+        run: |
+          test -s dash_devtools_plus/assets/dash_devtools_plus.js
+          test -s dash_devtools_plus/assets/dash_devtools_plus.css
+      - name: Share frontend assets with Python jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-assets
+          path: dash_devtools_plus/assets/
+          if-no-files-found: error
+          retention-days: 1

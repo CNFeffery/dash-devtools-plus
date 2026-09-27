@@ -22,10 +22,12 @@ From the repository root, install the checkout into your Python environment:
 
 ```bash
 python -m pip install -e ".[dev]"
+npm ci
+npm run build
 python examples/callback_performance/app.py
 ```
 
-The checkout includes built frontend assets. If you modify frontend source, use your Node.js environment to run `npm ci` and `npm run build`, then reload the page. Open <http://127.0.0.1:8050> to explore the current callback monitoring and fullscreen topology.
+Built frontend assets are ignored by Git, so use your Node.js environment to run `npm ci` and `npm run build` before starting an example from a fresh checkout. Rebuild after modifying frontend source, then reload the page. Open <http://127.0.0.1:8050> to explore the current callback monitoring and fullscreen topology.
 
 ## 🪄 Minimal application (default setup)
 

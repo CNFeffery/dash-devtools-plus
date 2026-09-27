@@ -8,6 +8,10 @@ __pycache__/
 build/
 dist/
 node_modules/
+
+# Generated frontend bundles (build before testing or packaging from source).
+/dash_devtools_plus/assets/
+
 .coverage
 output/playwright/
 output/compatibility/

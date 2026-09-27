@@ -122,9 +122,10 @@ stream that uses `websocket_callbacks=True`, `ctx.websocket.get_prop`, and
 Use the project environments described by the repository setup, then run:
 
 ```bash
-python -m pytest
+npm ci
 npm run test:frontend
 npm run build
+python -m pytest
 ```
 
 Python code is checked with Ruff:
@@ -134,7 +135,7 @@ ruff check .
 ruff format --check .
 ```
 
-The frontend build writes distributable assets to `dash_devtools_plus/assets/`; commit those generated files whenever frontend source changes.
+The frontend build writes distributable assets to `dash_devtools_plus/assets/`, which is ignored by Git. Run `npm run build` after changing frontend source and before running Python tests, examples, or `python -m build`. CI builds these assets before testing and packaging; published Python packages still include them.
 
 ## 🗺️ Documentation map
 
