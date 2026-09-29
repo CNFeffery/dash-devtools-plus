@@ -1,4 +1,9 @@
 export default {
+  fastapiDocsNav: "API docs",
+  fastapiDocsTitle: "API documentation",
+  fastapiDocsSwitcher: "Documentation view",
+  fastapiDocsOpenSeparate: "Open in separate page",
+  fastapiDocsUnavailable: "FastAPI documentation is disabled for this application.",
   title: "Devtools Plus",
   subtitle: "Dash app development panel",
   language: "Switch language",

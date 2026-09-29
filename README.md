@@ -62,6 +62,7 @@ For full installation notes, see [Quick start](./docs/en/quick-start.md).
 | Imported dependencies | Direct project imports grouped as standard library, Dash components, Dash Hooks, or other libraries. | [Open guide](./docs/en/features/dependencies.md) |
 | Toolbar skins | Preview and apply native Dash Dev Tools toolbar and error-display themes. | [Open guide](./docs/en/features/toolbar-skins.md) |
 | Runtime environment | Collect essential Python, system, browser, and third-party package versions, then copy an issue-ready report. | [Open guide](./docs/en/features/runtime-environment.md) |
+| FastAPI API docs | View Swagger UI and ReDoc inside the panel or open either in a separate page, using the server's configured URLs. | [Open guide](./docs/en/features/fastapi-docs.md) |
 
 ## ⚙️ Optional configuration
 
@@ -99,7 +100,7 @@ Five applications in [`examples/`](./examples/) cover focused and increasingly c
 | `callback_performance` | Three contrasting callbacks for live performance monitoring. | `python examples/callback_performance/app.py` |
 | `intermediate` | A travel-budget planner built with Dash core components. | `python examples/intermediate/app.py` |
 | `comprehensive` | A large callback laboratory for acceptance testing all workspaces. | `python examples/comprehensive/app.py` |
-| `fastapi` | A WebSocket-powered server-time stream with FastAPI APIs. | `python examples/fastapi/app.py` |
+| `fastapi` | A WebSocket-powered server-time stream and sample task APIs with custom Swagger UI and ReDoc paths. | `python examples/fastapi/app.py` |
 
 They share port `8050`; run one at a time. Read [Example applications](./docs/en/examples.md) before using the comprehensive callback laboratory.
 
@@ -116,6 +117,7 @@ pip install "dash-devtools-plus[fastapi]"
 See the [`fastapi` example](./examples/fastapi/app.py) for a small server-time
 stream that uses `websocket_callbacks=True`, `ctx.websocket.get_prop`, and
 `set_props`, alongside custom asynchronous FastAPI APIs.
+Its API docs are available at `/api/docs` and `/api/redoc`.
 
 ## 🛠️ Development
 

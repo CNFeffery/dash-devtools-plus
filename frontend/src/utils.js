@@ -38,7 +38,7 @@ export function splitOutputs(output) {
   return cleaned ? cleaned.split("...").map((part) => part.replace(/@[^.]+$/, "")) : [];
 }
 
-const INTERNALLY_SCROLLABLE_TABS = new Set(["appearance", "callbacks", "environment", "inspector"]);
+const INTERNALLY_SCROLLABLE_TABS = new Set(["appearance", "callbacks", "environment", "fastapi-docs", "inspector"]);
 
 export function usesInternalTabScroll(tabKey) {
   return INTERNALLY_SCROLLABLE_TABS.has(tabKey);

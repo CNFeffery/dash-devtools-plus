@@ -130,12 +130,36 @@ def _component_props_for(app: Any | None) -> dict[str, Any]:
     return {
         **_CONFIG,
         "enabled": bool(app is not None and _devtools_enabled(app)),
+        "fastapiDocs": _fastapi_docs_config(app),
         "callbacksEndpoint": _CALLBACKS_ROUTE,
         "dependenciesEndpoint": _DEPENDENCIES_ROUTE,
         "componentLibrariesEndpoint": _COMPONENT_LIBRARIES_ROUTE,
         "hookLibrariesEndpoint": _HOOK_LIBRARIES_ROUTE,
         "serverMetricsEndpoint": _SERVER_METRICS_ROUTE,
         "runtimeEnvironmentEndpoint": _RUNTIME_ENVIRONMENT_ROUTE,
+    }
+
+
+def _fastapi_docs_config(app: Any | None) -> dict[str, Any] | None:
+    """Expose the owning FastAPI server's configured documentation routes."""
+
+    if app is None:
+        return None
+    try:
+        from fastapi import FastAPI  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        return None
+
+    server = getattr(app, "server", None)
+    if not isinstance(server, FastAPI):
+        return None
+
+    # FastAPI does not install either documentation route without OpenAPI.
+    openapi_enabled = bool(server.openapi_url)
+    root_path = server.root_path.rstrip("/")
+    return {
+        "docsUrl": f"{root_path}{server.docs_url}" if openapi_enabled and server.docs_url else None,
+        "redocUrl": f"{root_path}{server.redoc_url}" if openapi_enabled and server.redoc_url else None,
     }
 
 

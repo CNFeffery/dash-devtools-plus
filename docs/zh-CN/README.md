@@ -24,3 +24,4 @@
 | 依赖库 | 按类别呈现项目直接导入的依赖 | [查看](features/dependencies.md) |
 | 工具条换肤 | 预览并应用 Dash 原生 Dev Tools 工具栏主题 | [查看](features/toolbar-skins.md) |
 | 运行环境信息 | 汇总并复制必要的 Python、系统、浏览器与第三方包版本 | [查看](features/runtime-environment.md) |
+| FastAPI 接口文档 | 按服务端实际地址嵌入并切换 Swagger UI 与 ReDoc | [查看](features/fastapi-docs.md) |

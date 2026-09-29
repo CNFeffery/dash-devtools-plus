@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added a FastAPI-only API docs workspace with embedded Swagger UI/ReDoc, support for custom documentation URLs, and an option to open either page separately.
 - Added fuzzy, exact ID, and exact prop name search for callbacks.
 - Added one-click navigation from component inspection to related callbacks using exact ID search.
 - Added component inspection from State Snapshots with preserved snapshot state on return.

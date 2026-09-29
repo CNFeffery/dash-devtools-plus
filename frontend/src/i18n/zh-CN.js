@@ -1,4 +1,9 @@
 export default {
+  fastapiDocsNav: "接口文档",
+  fastapiDocsTitle: "接口文档",
+  fastapiDocsSwitcher: "切换文档页面",
+  fastapiDocsOpenSeparate: "在独立页面打开",
+  fastapiDocsUnavailable: "当前应用未启用 FastAPI 接口文档。",
   title: "Devtools Plus",
   subtitle: "Dash应用开发辅助面板",
   language: "切换语言",

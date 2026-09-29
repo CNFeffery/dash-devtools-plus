@@ -318,6 +318,56 @@
   padding: 20px;
 }
 
+.ddp-fastapi-docs-workspace {
+  background: var(--ddp-panel);
+  border: 1px solid var(--ddp-line);
+  border-radius: 12px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ddp-fastapi-docs-controls {
+  align-items: center;
+  border-bottom: 1px solid var(--ddp-line-soft);
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
+  min-height: 54px;
+  padding: 8px 14px;
+}
+
+.ddp-fastapi-docs-path {
+  color: var(--ddp-muted);
+  flex: 1 1 auto;
+  font-family: var(--ddp-mono);
+  font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ddp-fastapi-docs-frame {
+  background: #fff;
+  border: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.ddp-fastapi-docs-empty {
+  align-items: center;
+  background: var(--ddp-panel);
+  border: 1px solid var(--ddp-line);
+  border-radius: 12px;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
 .ddp-workspace-header {
   align-items: center;
   display: flex;

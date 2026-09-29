@@ -8,7 +8,7 @@
 | `callback_performance` | 对比递增延时、固定延时轮询和即时浏览器端回调，集中体验实时性能监控。 | `python examples/callback_performance/app.py` |
 | `intermediate` | 使用 Dash 内置组件体验聚焦的旅行预算规划场景。 | `python examples/intermediate/app.py` |
 | `comprehensive` | 大规模覆盖回调拓扑、模式匹配、源码探查、快照、依赖库和工具栏主题。 | `python examples/comprehensive/app.py` |
-| `fastapi` | 通过 `backend="fastapi"` 运行 Dash，使用持久 WebSocket 回调流式推送服务端时间，并提供异步 API 接口。需要先执行 `pip install "dash-devtools-plus[fastapi]"`。 | `python examples/fastapi/app.py` |
+| `fastapi` | 将 FastAPI 服务传给 Dash，用持久 WebSocket 回调推送服务端时间，并在自定义 `/api/docs`、`/api/redoc` 页面展示任务接口。需要先执行 `pip install "dash-devtools-plus[fastapi]"`。 | `python examples/fastapi/app.py` |
 
 五个示例默认均使用 `8050` 端口，请一次只运行一个，然后访问 <http://127.0.0.1:8050>。按你想验证的问题挑选复杂度，让 Devtools Plus 带你看清每个环节 ✨。
 

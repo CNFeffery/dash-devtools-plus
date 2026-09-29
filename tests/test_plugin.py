@@ -52,6 +52,11 @@ def test_devtools_config_has_no_metrics_route():
     assert any(item["namespace"] == "DashDevtoolsPlus" for item in config["dev_tools"])
 
 
+def test_flask_backend_does_not_expose_fastapi_docs_panel():
+    app = Dash(__name__)
+    assert plugin._component_props_for(app)["fastapiDocs"] is None
+
+
 @pytest.mark.parametrize(
     "endpoint",
     [

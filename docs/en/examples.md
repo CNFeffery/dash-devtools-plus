@@ -8,7 +8,7 @@ The repository includes five runnable applications. Each calls `configure_devtoo
 | `callback_performance` | Compare an increasing server delay, a fixed-delay polling callback, and an instant clientside callback. | `python examples/callback_performance/app.py` |
 | `intermediate` | Explore a focused travel-budget scenario implemented with Dash core components. | `python examples/intermediate/app.py` |
 | `comprehensive` | Exercise callback topology, pattern matching, source inspection, snapshots, dependencies, and toolbar themes at scale. | `python examples/comprehensive/app.py` |
-| `fastapi` | Stream server time with a persistent WebSocket callback and asynchronous FastAPI APIs. Requires `pip install "dash-devtools-plus[fastapi]"`. | `python examples/fastapi/app.py` |
+| `fastapi` | Stream server time with a persistent WebSocket callback and explore asynchronous task APIs at custom `/api/docs` and `/api/redoc` paths. Requires `pip install "dash-devtools-plus[fastapi]"`. | `python examples/fastapi/app.py` |
 
 All five use port `8050` by default. Run one application at a time, then open <http://127.0.0.1:8050>. Pick the size that matches the question you want to explore, then let Devtools Plus reveal the moving parts. ✨
 

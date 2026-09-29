@@ -14,7 +14,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from dash import Dash, ctx, dcc, html, set_props  # noqa: E402
 from dash.exceptions import WebsocketDisconnected  # noqa: E402
-from fastapi import FastAPI  # noqa: E402
+from fastapi import FastAPI, HTTPException  # noqa: E402
+from pydantic import BaseModel, Field  # noqa: E402
 
 from dash_devtools_plus import configure_devtools_plus  # noqa: E402
 
@@ -24,8 +25,8 @@ configure_devtools_plus(
     editor_project_root=PROJECT_ROOT,
 )
 
-app = Dash(__name__, backend="fastapi", websocket_callbacks=True)
-server: FastAPI = app.server
+server = FastAPI(docs_url="/api/docs", redoc_url="/api/redoc")
+app = Dash(__name__, server=server, websocket_callbacks=True)
 app.title = "FastAPI Example · Dash Devtools Plus"
 
 
@@ -47,6 +48,51 @@ async def capabilities() -> dict[str, Any]:
         "persistentCallback": True,
         "features": ["get_prop", "set_props", "asyncio", "FastAPI"],
     }
+
+
+class TaskCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=80, examples=["Review API docs"])
+    priority: int = Field(default=2, ge=1, le=5, description="1 is the highest priority")
+
+
+class Task(TaskCreate):
+    id: int
+    completed: bool = False
+
+
+demo_tasks: dict[int, Task] = {
+    1: Task(id=1, title="Explore Swagger UI", priority=1),
+    2: Task(id=2, title="Compare the ReDoc view", priority=2, completed=True),
+}
+
+
+@server.get("/api/tasks", response_model=list[Task], tags=["Demo tasks"])
+async def list_tasks(completed: bool | None = None) -> list[Task]:
+    """Filter the example tasks by completion status."""
+
+    return [
+        task for task in demo_tasks.values()
+        if completed is None or task.completed == completed
+    ]
+
+
+@server.get("/api/tasks/{task_id}", response_model=Task, tags=["Demo tasks"])
+async def get_task(task_id: int) -> Task:
+    """Look up one example task by its path parameter."""
+
+    if task_id not in demo_tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return demo_tasks[task_id]
+
+
+@server.post("/api/tasks", response_model=Task, status_code=201, tags=["Demo tasks"])
+async def create_task(task: TaskCreate) -> Task:
+    """Create an in-memory task from a validated JSON request body."""
+
+    task_id = max(demo_tasks, default=0) + 1
+    created = Task(id=task_id, title=task.title, priority=task.priority)
+    demo_tasks[task_id] = created
+    return created
 
 
 app.layout = html.Div(
@@ -115,6 +161,8 @@ app.layout = html.Div(
                     html.A(
                         "View FastAPI health check", href="/api/health", target="_blank"
                     ),
+                    " · ",
+                    html.A("Browse API docs", href="/api/docs", target="_blank"),
                 ]
             ),
         ],

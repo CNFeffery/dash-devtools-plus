@@ -24,3 +24,4 @@ See [Quick start](quick-start.md#install-from-source) to run this checkout, and 
 | Imported dependencies | Direct project imports grouped by library category | [Open](features/dependencies.md) |
 | Toolbar skins | Preview and apply native Dash Dev Tools toolbar themes | [Open](features/toolbar-skins.md) |
 | Runtime environment | Collect and copy essential Python, system, browser, and package versions | [Open](features/runtime-environment.md) |
+| FastAPI API docs | Embed and switch between Swagger UI and ReDoc at the server's configured paths | [Open](features/fastapi-docs.md) |

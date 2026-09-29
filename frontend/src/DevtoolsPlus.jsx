@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {Button, ConfigProvider, Drawer, Segmented, Tabs, Tooltip} from "antd";
 import {
   ApartmentOutlined,
+  ApiOutlined,
   BgColorsOutlined,
   CameraOutlined,
   CloseOutlined,
@@ -16,6 +17,7 @@ import CallbackPanel from "./CallbackPanel";
 import ComponentInspectorPanel from "./ComponentInspectorPanel";
 import ComponentProbeOverlay from "./ComponentProbeOverlay";
 import DependenciesPanel from "./DependenciesPanel";
+import FastApiDocsPanel from "./FastApiDocsPanel";
 import DevtoolsAppearancePanel from "./DevtoolsAppearancePanel";
 import RuntimeEnvironmentPanel from "./RuntimeEnvironmentPanel";
 import {createNestedInspection, inspectDashComponentReference} from "./componentInspector";
@@ -73,6 +75,7 @@ function EnabledDevtoolsPlus({
   dependenciesEndpoint = "_dash-devtools-plus/dependencies",
   serverMetricsEndpoint = "_dash-devtools-plus/server-metrics",
   runtimeEnvironmentEndpoint = "_dash-devtools-plus/runtime-environment",
+  fastapiDocs = null,
 }) {
   const {popup, setPopup} = useDevtool();
   const isOpen = popup === POPUP_ID;
@@ -298,6 +301,11 @@ function EnabledDevtoolsPlus({
                   />
                 ),
               },
+              ...(fastapiDocs ? [{
+                key: "fastapi-docs",
+                label: <span className="ddp-tab-label"><ApiOutlined />{t("fastapiDocsNav")}</span>,
+                children: <FastApiDocsPanel docs={fastapiDocs} t={t} />,
+              }] : []),
               {
                 key: "server",
                 label: <span className="ddp-tab-label"><DashboardOutlined />{t("serverMetricsNav")}</span>,
