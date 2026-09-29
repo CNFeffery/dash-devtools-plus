@@ -91,7 +91,9 @@ def test_fastapi_server_and_prefixed_devtools_routes_coexist():
 
 
 def test_docs_panel_uses_fastapi_documentation_routes_not_dash_prefix():
-    server = fastapi.FastAPI(docs_url="/reference/swagger", redoc_url="/reference/redoc")
+    server = fastapi.FastAPI(
+        docs_url="/reference/swagger", redoc_url="/reference/redoc"
+    )
     app = Dash(__name__, server=server, routes_pathname_prefix="/dashboard/")
     app.layout = html.Div("FastAPI documentation")
     enable_dev_tools(app)
@@ -144,10 +146,14 @@ def test_fastapi_example_serves_dash_and_its_async_api():
     assert client.get("/api/redoc").status_code == 200
     assert client.get("/docs").status_code == 404
     assert len(client.get("/api/tasks").json()) >= 2
-    assert all(task["completed"] for task in client.get("/api/tasks?completed=true").json())
+    assert all(
+        task["completed"] for task in client.get("/api/tasks?completed=true").json()
+    )
     assert client.get("/api/tasks/1").json()["title"] == "Explore Swagger UI"
     assert client.get("/api/tasks/9999").status_code == 404
-    created = client.post("/api/tasks", json={"title": "Inspect request schemas", "priority": 3})
+    created = client.post(
+        "/api/tasks", json={"title": "Inspect request schemas", "priority": 3}
+    )
     assert created.status_code == 201
     assert client.get(f"/api/tasks/{created.json()['id']}").json() == created.json()
     assert client.post("/api/tasks", json={"title": ""}).status_code == 422

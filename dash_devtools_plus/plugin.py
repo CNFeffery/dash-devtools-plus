@@ -158,8 +158,12 @@ def _fastapi_docs_config(app: Any | None) -> dict[str, Any] | None:
     openapi_enabled = bool(server.openapi_url)
     root_path = server.root_path.rstrip("/")
     return {
-        "docsUrl": f"{root_path}{server.docs_url}" if openapi_enabled and server.docs_url else None,
-        "redocUrl": f"{root_path}{server.redoc_url}" if openapi_enabled and server.redoc_url else None,
+        "docsUrl": f"{root_path}{server.docs_url}"
+        if openapi_enabled and server.docs_url
+        else None,
+        "redocUrl": f"{root_path}{server.redoc_url}"
+        if openapi_enabled and server.redoc_url
+        else None,
     }
 
 

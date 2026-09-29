@@ -6,7 +6,7 @@ import asyncio
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -52,7 +52,9 @@ async def capabilities() -> dict[str, Any]:
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=1, max_length=80, examples=["Review API docs"])
-    priority: int = Field(default=2, ge=1, le=5, description="1 is the highest priority")
+    priority: int = Field(
+        default=2, ge=1, le=5, description="1 is the highest priority"
+    )
 
 
 class Task(TaskCreate):
@@ -67,11 +69,12 @@ demo_tasks: dict[int, Task] = {
 
 
 @server.get("/api/tasks", response_model=list[Task], tags=["Demo tasks"])
-async def list_tasks(completed: bool | None = None) -> list[Task]:
+async def list_tasks(completed: Optional[bool] = None) -> list[Task]:
     """Filter the example tasks by completion status."""
 
     return [
-        task for task in demo_tasks.values()
+        task
+        for task in demo_tasks.values()
         if completed is None or task.completed == completed
     ]
 
